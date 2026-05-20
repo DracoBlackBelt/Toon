@@ -112,6 +112,7 @@ App {
 			if (buienradarSettingsJson['selectedLongitude']) lon = buienradarSettingsJson['selectedLongitude'];		
 			if (buienradarSettingsJson['selectedLatitude']) lat = buienradarSettingsJson['selectedLatitude'];		
 		} catch(e) {
+			console.log("Buienradar: Error reading user settings: " + e);
 		}
 	}
 
@@ -130,15 +131,15 @@ App {
 	}
 
 	function updateBuienradar() {
-		
-  		var weekday = new Array(7);
-  		weekday[0] = "Zo";
-  		weekday[1] = "Ma";
- 		weekday[2] = "Di";
-  		weekday[3] = "Wo";
- 		weekday[4] = "Do";
-  		weekday[5] = "Vr";
-  		weekday[6] = "Za";
+
+	var weekday = new Array(7);
+	weekday[0] = "Zo";
+	weekday[1] = "Ma";
+	weekday[2] = "Di";
+	weekday[3] = "Wo";
+	weekday[4] = "Do";
+	weekday[5] = "Vr";
+	weekday[6] = "Za";
 
 		var now = new Date().getTime();
 		timeStr = i18n.dateTime(now, i18n.time_yes);
@@ -148,6 +149,7 @@ App {
 
 			if (xmlhttp.readyState == 4) {
 				if (xmlhttp.status == 200) {
+
 					var brJson = JSON.parse(xmlhttp.responseText);
 					indexStation = -1;
 
@@ -164,13 +166,13 @@ App {
 						// read specific selected location weather data
 
 					if ( indexStation > -1 ) {
- 
-	
+
+
 						// save actual temp for use in TemperatureLogger app
 
-   						var doc2 = new XMLHttpRequest();
+	var doc2 = new XMLHttpRequest();
 						doc2.open("PUT", "file:///var/volatile/tmp/actualBuienradarTemp.txt");
-   						doc2.send(brJson['actual']['stationmeasurements'][indexStation]['temperature'] + ":" + brJson['actual']['stationmeasurements'][indexStation]['timestamp']);
+	doc2.send(brJson['actual']['stationmeasurements'][indexStation]['temperature'] + ":" + brJson['actual']['stationmeasurements'][indexStation]['timestamp']);
 
 						if (brJson['actual']['stationmeasurements'][indexStation]['windspeed']) windsnelheidMS = brJson['actual']['stationmeasurements'][indexStation]['windspeed'];
 						if (brJson['actual']['stationmeasurements'][indexStation]['windspeedBft']) windsnelheidBF = brJson['actual']['stationmeasurements'][indexStation]['windspeedBft'];
@@ -187,7 +189,7 @@ App {
 						icoonlink = "qrc:/tsc/" + icoonid + ".png";
 
 							// fill model for grid of weather station data on detail screen
-	
+
 						var tmpActual = [];	
 						tmpActual.push({'location': stationArray[indexStation],
 							  'temperature': 'Temperatuur:',
@@ -207,7 +209,7 @@ App {
 							  'zonoponder': BuienradarJS.lineZonOpOnder(brJson['actual']['sunrise'], brJson['actual']['sunset'])});
 						actualweather = tmpActual;
 
-				
+
 						zonopkomst = brJson['actual']['sunrise']
 						zononder = brJson['actual']['sunset']
 
@@ -218,6 +220,7 @@ App {
 
 					var tmpNewDate = new Date(brJson['forecast']['fivedayforecast'][0]['day']);
 					var tmpdagweek = weekday[tmpNewDate.getDay()];
+					var tmpUrl;
 
 					var tmpForecast = [];	
 					tmpForecast.push({'kanszon': 'zon %',
@@ -243,9 +246,9 @@ App {
 						// load next 5 days forecast
 
 					for (var i = 0; i < 5; i++) {
-						var tmpNewDate = new Date(brJson['forecast']['fivedayforecast'][i]['day']);
-						var tmpdagweek = weekday[tmpNewDate.getDay()];
-						var tmpUrl = brJson['forecast']['fivedayforecast'][i]['iconurl'].split("/");
+						tmpNewDate = new Date(brJson['forecast']['fivedayforecast'][i]['day']);
+						tmpdagweek = weekday[tmpNewDate.getDay()];
+						tmpUrl = brJson['forecast']['fivedayforecast'][i]['iconurl'].split("/");
 						var dpicoonid = tmpUrl[tmpUrl.length - 1].substring(0, tmpUrl[tmpUrl.length - 1].length - 4);
 						var dpicoon = "qrc:/tsc/" + dpicoonid + ".png";
 						tmpForecast.push({'dagweek': tmpdagweek,
@@ -279,6 +282,8 @@ App {
 
 					icoonimageDim = BuienradarJS.parseWeatherIdAndText(true, "file:///qmf/qml/apps/buienradar/drawables/Dim", icoonid, icoonzin, zonopkomst, zononder, timeStr);
 					icoonimageNoDim = BuienradarJS.parseWeatherIdAndText(true, "file:///qmf/qml/apps/buienradar/drawables/Home", icoonid, icoonzin, zonopkomst, zononder, timeStr);
+				} else {
+					console.log("Buienradar: updateBuienradar failed with status: " + xmlhttp.status);
 				}
 			}
 		}
@@ -321,6 +326,7 @@ App {
 							// fill array with the next 24 values
 
 						for (var i = startForecasts; i < brJson['forecasts'].length ; i++) {
+							// NOTE: 'precipation' is a typo in the Buienradar API payload, but we must use it to get the data.
 							mmRegen =  brJson['forecasts'][i]['precipation'];
 							newArray.push(mmRegen);
 							if (mmRegen > 0) showRain = true;
@@ -345,6 +351,8 @@ App {
 							
 						regenMaxValue = Math.round(maxValue + 0.5); 
 					}
+				} else {
+					console.log("Buienradar: updateRegenkans failed with status: " + xmlhttp.status);
 				}
 			}
 		}

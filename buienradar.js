@@ -14,16 +14,18 @@ function addMinutes(time/*"hh:mm"*/, minsToAdd/*"N"*/) {
 }
 
 function formatScale(maxRegen, yScale) {
-    if (yScale = 0) {
+    if (yScale === 0) {
 	return 72 / maxRegen;
     } else {
 	return 72 / yScale;
     }
 }
 
+
 function formatTemp(tempValue, locationName) {
 //adapted to reflect locale settings
-	if (locationName) return locationName + ": " + i18n.number( Number( tempValue ), 1 ) + " °C";
+	var displayName = locationName === "Schiphol" ? "Amsterdam" : locationName;
+	if (displayName) return displayName + ": " + i18n.number( Number( tempValue ), 1 ) + " °C";
 	return "Even geduld..."
 }
 
@@ -62,9 +64,21 @@ function formatZin(zin) {
 function determineNight (tijdnu, zonop, zononder) {
 	var zonoptimestr = zonop.substring(11,16);
 	var zonondertimestr = zononder.substring(11,16);
-	if (tijdnu.length == 4)
+
+	if (tijdnu.length == 4) {
 		tijdnu = "0" + tijdnu;
-	var isTodayDay = ((tijdnu <= zonondertimestr) && (tijdnu >= zonoptimestr));
+	}
+
+	function toMinutes(time) {
+		var parts = time.split(':');
+		return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+	}
+
+	var nowMin = toMinutes(tijdnu);
+	var sunriseMin = toMinutes(zonoptimestr);
+	var sunsetMin = toMinutes(zonondertimestr);
+
+	var isTodayDay = (nowMin >= sunriseMin && nowMin <= sunsetMin);
 	return !isTodayDay;
 }
 

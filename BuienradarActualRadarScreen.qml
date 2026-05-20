@@ -31,6 +31,8 @@ Screen {
 
 	Rectangle {
 		id:bigRadarImage
+		width: isNxt ? 600 : 400
+		height: isNxt ? 600 : 400
 		anchors {
 			baseline: parent.top
 			left: parent.left
@@ -173,8 +175,7 @@ Screen {
 			stillRadarImage.visible = true;
 			bigRadarImage.visible = false;
 			app.stillimagesurl = "https://processing-cdn.buienradar.nl/processing/nl/weathermaps/Maxtemperature/default/" + todayStr + currentHours + "00.png";
-			console.log ("****** Buienrader:  " + "https://processing-cdn.buienradar.nl/processing/nl/weathermaps/Maxtemperature/default/" + todayStr + currentHours + "00.png")
-			setTitle("Maximum temperatuur vandaag"); 
+			setTitle("Maximum temperatuur vandaag");
 		}
 	}
 
