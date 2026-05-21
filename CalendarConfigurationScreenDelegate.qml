@@ -40,7 +40,7 @@ Rectangle
 		leftClickMargin: 3
 		bottomClickMargin: 5
 		iconSource: "qrc:/tsc/minus.png"
-		visible: !urlExisting
+		visible: urlAlreadyAdded
 		onClicked: {
 			var index = app.calendarSettingsJson['Calendar_URL'].indexOf(urlName);
 			if (index !== -1) {
@@ -60,7 +60,7 @@ Rectangle
 		leftClickMargin: 3
 		bottomClickMargin: 5
 		iconSource: "qrc:/tsc/plus.png"
-		visible: urlExisting
+		visible: !urlAlreadyAdded
 		onClicked: {
 			app.calendarSettingsJson['Calendar_URL'].push(urlName)
 		  	app.saveSettings();

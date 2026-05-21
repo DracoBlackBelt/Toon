@@ -50,7 +50,7 @@ Screen {
 								 friendlyName = tmpArray[k].friendlyName;
 							}
 						}
-						urlModel.append({urlName: app.calendarSettingsJson['Calendar_URL'][i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStr), urlExisting: 0});
+						urlModel.append({urlName: app.calendarSettingsJson['Calendar_URL'][i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStr), urlAlreadyAdded: true});
 					}
 
 					j = parseInt(colorStr);
@@ -60,7 +60,7 @@ Screen {
 							j = j + 1;
 							colorStr = j.toString();
 							if (j > 9) colorStr = "9";
-							urlModel.append({urlName: tmpArray[i].link, urlFriendlyName: tmpArray[i].friendlyName, urlColor: app.colorCodes(colorStr), urlExisting: -1});
+							urlModel.append({urlName: tmpArray[i].link, urlFriendlyName: tmpArray[i].friendlyName, urlColor: app.colorCodes(colorStr), urlAlreadyAdded: false});
 						}
 					}
 				}
@@ -238,7 +238,7 @@ Screen {
 		}
 
 		onClicked: {
-			qnumKeyboard.open("Voer het aantal minuten in:", refreshIntervalLabel.inputText, app.refreshIntervalLabel, 1 , saveRefreshIntervalLabel, validateRefreshIntervalLabel);
+			qnumKeyboard.open("Voer het aantal minuten in:", refreshIntervalLabel.inputText, refreshIntervalLabel, 1 , saveRefreshIntervalLabel, validateRefreshIntervalLabel);
 			qnumKeyboard.maxTextLength = 2;
 			qnumKeyboard.state = "num_integer_clear_backspace";
 		}
@@ -246,7 +246,7 @@ Screen {
 
 	Text {
 		id: urlListLabel
-		text: "Bechikbare kalenders:"
+		text: "Beschikbare kalenders:"
 		anchors {
 			left: refreshIntervalLabel.left
 			top: refreshIntervalLabel.bottom

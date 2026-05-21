@@ -16,20 +16,21 @@ Screen {
 	function navigatePage(page) {
 
 		var startItem = page * 16;
-		calendarModel.clear();					// clear datamodel
+		calendarModel.clear();
 		var tmp = app.calendarDatesString.split("\n");
-		var tmpAppointmentTime	= "";
-		var counter = 0;
+		var tmpAppointmentTime = "";
 		var validCount = 0;
+		var filled = 0;
 		for (var i = 0; i < tmp.length; i++) {
 			if (tmp[i].length > 20) {
-				if (validCount >= startItem && validCount < startItem + 16) {
+				if (validCount >= startItem && filled < 16) {
 					if ((tmp[i].slice(11, 16) == "00:00") && (tmp[i].slice(30, 35) == "23:59")) { //all day event
-						tmpAppointmentTime= " ";
+						tmpAppointmentTime = " ";
 					} else {
-						tmpAppointmentTime= tmp[i].slice(11, 16) + " - " + tmp[i].slice(30, 35);
+						tmpAppointmentTime = tmp[i].slice(11, 16) + " - " + tmp[i].slice(30, 35);
 					}
-					calendarModel.append({appointmentDate: tmp[i].slice(0, 10), appointmentTitle: tmp[i].slice(57,tmp[i].length-1), appointmentColor: app.colorCodes(tmp[i].slice(56,57)), appointmentTime: tmpAppointmentTime});
+					calendarModel.append({appointmentDate: tmp[i].slice(0, 10), appointmentTitle: tmp[i].slice(57), appointmentColor: app.colorCodes(tmp[i].slice(56,57)), appointmentTime: tmpAppointmentTime});
+					filled++;
 				}
 				validCount++;
 			}

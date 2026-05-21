@@ -39,7 +39,6 @@ App {
 	property string endDateFirstAppointment		// used to calculate the interval for the timer to trigger the next screen refresh
 	property int offsetNoticationTimer		// number of miiliseconds till the next notification (reminder) is is to be shown
 	property string textNotification		// text of notification to show
-	property string calendarListDates		// all upcoming meetings in one text block
 	property bool showNotification			// is there a notification to show
 	property string showNotificationSetting : "Yes"	// parameters from the userSettings.json file
 	property string showColorsSetting : "Yes"	// parameters from the userSettings.json file
@@ -80,6 +79,7 @@ App {
 			calendarSettingsJson = JSON.parse(userSettingsFile.read());
 			showNotificationSetting = calendarSettingsJson['ShowNotifications'];
 			showColorsSetting = calendarSettingsJson['ShowColors'];
+			showAnimationSetting = calendarSettingsJson['ShowAnimation'];
 			showDimTileExtended = calendarSettingsJson['DimTileExtended'];
 			refreshIntervalInMinutes = calendarSettingsJson['RefreshIntervalInMinutes'];
 		} catch(e) {
@@ -113,7 +113,7 @@ App {
 
 		if (iD > 0) vD = trigger.substring(iP+1,iD) * signTrigger;
 		if (iH > 0) vH = trigger.substring(iT+1,iH) * signTrigger;
-		if (iM > 0) vM = trigger.substring(iH+1,iM) * signTrigger;
+		if (iM > 0) vM = trigger.substring((iH > 0 ? iH : iT)+1,iM) * signTrigger;
 		if (iS > 0) vS = trigger.substring(iM+1,iS) * signTrigger;
 
 		return ((((((vD * 24) + vH) * 60) + vM) * 60) + vS) * 1000;
@@ -156,7 +156,6 @@ App {
 
 		calendarDatesString = "";
 		calendarDateNext1Label = "ophalen kalenders";
-		calendarListDates  = "ophalen kalenders";
 		calendarDateNext1Time = "";
 		calendarDateNext1LabelDim = "ophalen kalenders";
 		calendarDateNext1DateDim = "";
@@ -284,10 +283,11 @@ App {
 						if (indexCal > 9) colorStr = "9";
 
 						if (toDayStr < dateTo) {
+							var summary = aNode.substring(k+8, l).replace(/\r$/, "");
 							if (recurrenceTxt == "NONE") {
-								googleDates.push(dateFrom + " - " + dateTo + " - " + triggerTxt + " - " + colorStr + aNode.substring(k+8, l));
+								googleDates.push(dateFrom + " - " + dateTo + " - " + triggerTxt + " - " + colorStr + summary);
 							} else {
-								googleDates.push(dateFrom + " - " + dateTo + " - " + triggerTxt + " - " + colorStr + recurrenceFlagScr + aNode.substring(k+8, l));
+								googleDates.push(dateFrom + " - " + dateTo + " - " + triggerTxt + " - " + colorStr + recurrenceFlagScr + summary);
 							}
 						}
 
@@ -310,8 +310,8 @@ App {
 
 				// add to the calendarDatesString shown in the screen
 
-				for (i = 0; i < googleDates.length; i++) {
-					calendarDatesString = calendarDatesString + googleDates[i] + "\n";
+				if (googleDates.length > 0) {
+					calendarDatesString += googleDates.join("\n") + "\n";
 				}
 
 				// when this one was the last calendar to read, start sorting en processing the results
@@ -570,15 +570,8 @@ App {
 	}
 
 	function sortCalendarDates() {
-
-		// sort the collected dates from different calendarsd
-
-		var listDates = calendarDatesString.split("\n");
-		var tmp = CalendarJS.sortArray(listDates);
-		calendarDatesString = "";
-		for (var i = 0; i < tmp.length; i++) {
-			calendarDatesString = calendarDatesString + tmp[i] + "\n";
-		}
+		var listDates = calendarDatesString.split("\n").filter(function(s) { return s.length > 0; });
+		calendarDatesString = CalendarJS.sortArray(listDates).join("\n") + "\n";
 	}
 
 	function nowFormatted() {		// get now() in the format of the ICS files
@@ -605,10 +598,10 @@ App {
 	function compareNowDateLocal(now, dateLocal) {		// compare dates for full day events, show if on the same day
 
 		var result = false;
-		if (now.getYear() > dateLocal.getYear()) {
+		if (now.getFullYear() > dateLocal.getFullYear()) {
 			result = true;
 		} else {
-			if (now.getYear() == dateLocal.getYear()) {
+			if (now.getFullYear() == dateLocal.getFullYear()) {
 				if (now.getMonth() > dateLocal.getMonth()) {
 					result = true;
 				} else {
@@ -628,7 +621,6 @@ App {
 		// calculate yyyy-mm-ddThh:mm for now() to ignore old entries
 		var toDayStr = nowFormatted();
 
-		calendarListDates = "";
 		var thisOffset = 0;
 		var thisOffset2 = 0;
 		textNotification = "";
@@ -649,12 +641,12 @@ App {
 
 					// check for earliest notification time and text to display
 
-				if (response[i].slice(38, 53) !== "              ") {
+				if (response[i].slice(38, 53).trim() !== "") {
 					endDate = new Date(response[i].slice(0, 4), response[i].slice(5, 7) - 1, response[i].slice(8, 10), response[i].slice(11, 13), response[i].slice(14, 16), 0);
 					thisOffset = endDate - nowDate + calcAlarmOffsetInMs(response[i].slice(38, 53)) - 3600000;
 					if ((thisOffset < offsetNoticationTimer) && (thisOffset > 0)) {
 						offsetNoticationTimer = thisOffset;
-						textNotification = response[i].slice(57,response[i].length-1);
+						textNotification = response[i].slice(57);
 						showNotification = true;
 					}
 				}
@@ -688,12 +680,9 @@ App {
 					}
 				}
 
-				if (counter < 20) {
-					calendarListDates = calendarListDates + addCalendarListEntry(response[i]);
-				}
 				if (counter == 2) {
 					calendarDate3Color = colorCodes(response[i].slice(56,57));
-					calendarDateNext3Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57,response[i].length-1);
+					calendarDateNext3Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57);
 					if ((response[i].slice(11, 16) == "00:00") && (response[i].slice(30, 35) == "23:59")) {
 						calendarDateNext3Time = " ";
 					} else {
@@ -702,7 +691,7 @@ App {
 				}
 				if (counter == 1) {
 					calendarDate2Color = colorCodes(response[i].slice(56,57));
-					calendarDateNext2Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57,response[i].length-1);
+					calendarDateNext2Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57);
 					if ((response[i].slice(11, 16) == "00:00") && (response[i].slice(30, 35) == "23:59")) {
 						calendarDateNext2Time = " ";
 					} else {
@@ -711,14 +700,14 @@ App {
 				}
 				if (counter == 0) {
 					calendarDate1Color = colorCodes(response[i].slice(56,57));
-					calendarDateNext1Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57,response[i].length-1);
+					calendarDateNext1Label = response[i].slice(8, 10) + "-" + response[i].slice(5, 7) + ": " + response[i].slice(57);
 					if ((response[i].slice(11, 16) == "00:00") && (response[i].slice(30, 35) == "23:59")) {
 						calendarDateNext1Time = " ";
 					} else {
 						calendarDateNext1Time = response[i].slice(11, 16) + " - " + response[i].slice(30, 35);
 					}
-					calendarDateNext1LabelDim = response[i].slice(57,response[i].length-1);
-					if (calendarDateNext1LabelDim .length > 20) {
+					calendarDateNext1LabelDim = response[i].slice(57);
+					if (calendarDateNext1LabelDim.length > 20) {
 						calendarDateNext1LabelDim = calendarDateNext1LabelDim.slice(0,20) + "...";
 					}
 					calendarDateNext1DateDim = formatCalendarDateTile(response[i].slice(0, 10));
@@ -739,15 +728,6 @@ App {
 		endFirstAppointmentTimer.start();
 	}
 	
-
-	function addCalendarListEntry(newEntry) {
-
-		if ((newEntry.slice(11, 16) == "00:00") && (newEntry.slice(30, 35) == "23:59")) { //all day event
-			return "  " + newEntry.slice(0, 10) + " " + newEntry.slice(56,newEntry.length-1) + "\n\n";
-		} else {
-			return "  " + newEntry.slice(0, 10) + " " + newEntry.slice(56,newEntry.length-1) + "\n                       " + newEntry.slice(11, 16) + " - " + newEntry.slice(30, 35) + "\n";
-		}
-	}
 
 	function fullMonth(monthNum) {			// convert the month number to long description for the tile in dim state
 		switch (monthNum) {
@@ -807,6 +787,7 @@ App {
 	/// calculates miliseconds till end date of next appointment (to refresh the tile and calendar file)
 
 	function getMSecTillEndTimeNextAppointment() {
+		if (!endDateFirstAppointment) return 60000 * refreshIntervalInMinutes;
 		var now = new Date();
 		var nowUtc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(),now.getMilliseconds());
 		var endAppointment = Date.UTC(endDateFirstAppointment.slice(0,4), endDateFirstAppointment.slice(5,7) - 1, endDateFirstAppointment.slice(8,10), endDateFirstAppointment.slice(11,13), endDateFirstAppointment.slice(14,16), 1, 0);
