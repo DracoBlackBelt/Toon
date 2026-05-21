@@ -1,11 +1,11 @@
 # Toon Calendar App
 
-A QML app for the [Toon smart thermostat](https://www.quby.com/) that shows upcoming calendar events from any ICS URL (Google Calendar, iCloud, Office 365, public calendars) on the home screen tile and a scrollable full-screen list.
+A QML app for the [Toon smart thermostat](https://www.quby.com/) that shows upcoming calendar events from any ICS URL (Google Calendar, iCloud, Office 365, public calendars) on the home screen tile and a paginated full-screen list.
 
 ## Features
 
 - Displays the next 3 upcoming appointments on the home screen tile
-- Full-screen paginated list of upcoming events (up to 20 entries)
+- Full-screen paginated list of upcoming events (16 per page)
 - Supports Google Calendar, iCloud, Office 365 and any public `.ics` URL
 - Recurring events: daily, weekly (including specific weekdays), monthly, yearly
 - Per-calendar color coding
@@ -30,7 +30,7 @@ Open the calendar settings screen on your Toon to:
 
 - Add or remove ICS calendar URLs (includes a built-in list of public calendars)
 - Toggle notifications, color coding, dim-tile extended view, and balloon animations
-- Set the refresh interval (minimum 10 minutes)
+- Set the refresh interval (minimum 10 minutes via the UI)
 
 Settings are stored at `/mnt/data/tsc/calendar.userSettings.json` on the device.
 
