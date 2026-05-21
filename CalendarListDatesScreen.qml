@@ -15,26 +15,27 @@ Screen {
 
 	function navigatePage(page) {
 
-		var startItem = (page * 16) + 1;
+		var startItem = page * 16;
 		calendarModel.clear();					// clear datamodel
-		var tmp = app.calendarDatesString.split("\n");		
+		var tmp = app.calendarDatesString.split("\n");
 		var tmpAppointmentTime	= "";
 		var counter = 0;
-		for (var i = startItem; i < tmp.length; i++) {
-
+		var validCount = 0;
+		for (var i = 0; i < tmp.length; i++) {
 			if (tmp[i].length > 20) {
-				if ((tmp[i].slice(11, 16) == "00:00") && (tmp[i].slice(30, 35) == "23:59")) { //all day event
-					tmpAppointmentTime= " ";
-				} else {
-					tmpAppointmentTime= tmp[i].slice(11, 16) + " - " + tmp[i].slice(30, 35);
+				if (validCount >= startItem && validCount < startItem + 16) {
+					if ((tmp[i].slice(11, 16) == "00:00") && (tmp[i].slice(30, 35) == "23:59")) { //all day event
+						tmpAppointmentTime= " ";
+					} else {
+						tmpAppointmentTime= tmp[i].slice(11, 16) + " - " + tmp[i].slice(30, 35);
+					}
+					calendarModel.append({appointmentDate: tmp[i].slice(0, 10), appointmentTitle: tmp[i].slice(57,tmp[i].length-1), appointmentColor: app.colorCodes(tmp[i].slice(56,57)), appointmentTime: tmpAppointmentTime});
 				}
-				calendarModel.append({appointmentDate: tmp[i].slice(0, 10), appointmentTitle: tmp[i].slice(57,tmp[i].length-1), appointmentColor: app.colorCodes(tmp[i].slice(56,57)), appointmentTime: tmpAppointmentTime});
-				counter = counter +1;
-				if (counter == 16) i = tmp.length;		//end loop, max 16 items per page
+				validCount++;
 			}
 		}
-		widgetNavBar.pageCount = Math.ceil (tmp.length / 16);
-		
+		widgetNavBar.pageCount = Math.ceil(validCount / 16);
+
 	}
 
 	onCustomButtonClicked: {

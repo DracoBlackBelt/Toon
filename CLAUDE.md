@@ -47,7 +47,7 @@ Key offsets used throughout (hardcoded slice positions):
 |------|------|
 | `CalendarApp.qml` | App root — all ICS fetching, parsing, recurrence logic, timers, state |
 | `CalendarTile.qml` | Home screen tile — shows next 3 appointments; dim/normal state variants |
-| `CalendarListDatesScreen.qml` | Full-screen paginated list (16 entries per page, 2 columns); reads `calendarDatesString` directly. Note: `navigatePage` starts at index 1 — the first entry in `calendarDatesString` is never shown (off-by-one bug). |
+| `CalendarListDatesScreen.qml` | Full-screen paginated list (16 entries per page, 2 columns); reads `calendarDatesString` directly. |
 | `CalendarConfigurationScreen.qml` | Settings screen — toggles, refresh interval, calendar URL list |
 | `CalendarConfigurationScreenDelegate.qml` | Row in the URL list (add/remove buttons, color bar) |
 | `CalendarListDatesScreenDelegate.qml` | Row in the appointments grid |
