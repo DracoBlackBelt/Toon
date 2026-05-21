@@ -25,7 +25,7 @@ Restart the app on device after changes (or reboot). There are no tests, no lint
 1. `CalendarApp.qml` (`App` root) starts on boot with a delayed timer (20 s on Toon 2, 150 s on Toon 1) to let the device finish booting.
 2. `readCalendars()` fires for each URL in `Calendar_URL` settings, fetching the raw ICS text via `XMLHttpRequest`.
 3. Each `readGoogleCalendar()` call parses the ICS text with direct string indexing (no DOM/regex), building entries in `calendarDatesString`.
-4. When all calendars are fetched (`numberOfCalendersToRead == 0`), `sortCalendarDates()` sorts entries lexicographically (dates are ISO-formatted so string sort = chronological), then `processCollectedCalendarDates()` extracts the first 3 appointments into tile properties and sets notification/animation timers.
+4. When all calendars are fetched (`numberOfCalendersToRead == 0`), `sortCalendarDates()` filters out empty entries, then sorts lexicographically (ISO dates → string sort = chronological), then `processCollectedCalendarDates()` extracts the first 3 appointments into tile properties and sets notification/animation timers.
 5. Auto-refresh: either when the first appointment ends, or at the configured interval (default 60 min), whichever comes first. The UI enforces a minimum of 10 minutes; the timer enforces a hard floor of 5 minutes. A midnight timer refreshes day-label strings ("Vandaag"/"Morgen"/"Overmorgen").
 
 ### Internal data format
@@ -37,9 +37,11 @@ YYYY-MM-DDTHH:MM - YYYY-MM-DDTHH:MM - <trigger 15 chars> - <color digit><recflag
 ```
 
 Key offsets used throughout (hardcoded slice positions):
-- `0–10` start date, `19–35` end date, `38–53` trigger, `56` color index digit, `57+` title
+- `0–9` start date, `11–15` start time, `19–28` end date, `30–34` end time
+- `38–52` trigger (15 chars, space-padded when absent), `56` color index digit, `57+` title
 - All-day events: start `T00:00`, end `T23:59`
 - Recurring flags embedded in title prefix: `(j)` yearly, `(w)` weekly, `(m)` monthly, `(d)` daily, `(*)` other
+- Trailing `\r` is stripped from titles at parse time (`readGoogleCalendar`), so all consumers use `slice(57)` — no `length-1` needed
 
 ### Files
 
@@ -61,8 +63,6 @@ Settings file on device: `/mnt/data/tsc/calendar.userSettings.json`
 Keys: `ShowNotifications`, `ShowColors`, `ShowAnimation`, `DimTileExtended`, `RefreshIntervalInMinutes`, `Calendar_URL` (array of ICS URLs).
 
 Read via `FileIO`, written via `XMLHttpRequest PUT`.
-
-`calendarListDates` is a formatted text block built by `processCollectedCalendarDates()` (up to 20 entries via `addCalendarListEntry()`), but it is not used — `CalendarListDatesScreen` reads `calendarDatesString` directly. Editing `addCalendarListEntry()` has no effect on the UI.
 
 ### Public calendars index
 
