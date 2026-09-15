@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file; `CLAUDE.md` only points here.
+Compact guide for OpenCode sessions. This is the canonical agent file.
 
 ## What this is
 
