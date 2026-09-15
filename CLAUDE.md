@@ -25,7 +25,7 @@ Restart the app on device after changes (or reboot). There are no tests, no lint
 1. `CalendarApp.qml` (`App` root) starts on boot with a delayed timer (20 s on Toon 2, 150 s on Toon 1) to let the device finish booting.
 2. `readCalendars()` fires for each URL in `Calendar_URL` settings, fetching the raw ICS text via `XMLHttpRequest`.
 3. Each `readGoogleCalendar()` call parses the ICS text with direct string indexing (no DOM/regex), building entries in `calendarDatesString`.
-4. When all calendars are fetched (`numberOfCalendersToRead == 0`), `sortCalendarDates()` filters out empty entries, then sorts lexicographically (ISO dates → string sort = chronological), then `processCollectedCalendarDates()` extracts the first 3 appointments into tile properties and sets notification/animation timers.
+4. When all calendars are fetched (`numberOfCalendersToRead == 0`), `finishFetchCycle()` runs `sortCalendarDates()` (filters empty entries, sorts lexicographically — ISO dates → string sort = chronological) then `processCollectedCalendarDates()` (extracts the first 3 appointments into tile properties, sets notification/animation timers). `finishFetchCycle()` is the single completion point; a 2-minute `fetchWatchdog` timer and the empty-URL-list path can also trigger it. Each cycle bumps `fetchGeneration` so stale callbacks from superseded or finished cycles are dropped.
 5. Auto-refresh: either when the first appointment ends, or at the configured interval (default 60 min), whichever comes first. The UI enforces a minimum of 10 minutes; the timer enforces a hard floor of 5 minutes. A midnight timer refreshes day-label strings ("Vandaag"/"Morgen"/"Overmorgen").
 
 ### Internal data format
