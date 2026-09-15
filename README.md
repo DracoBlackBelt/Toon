@@ -16,19 +16,30 @@ A QML app for the [Toon smart thermostat](https://www.quby.com/) that shows upco
 
 ## Installation
 
-Copy the app files to your Toon device:
+Copy the app files to your Toon device. The app lives in a versioned directory (`calendar-<version>`, see `version.txt`), and the Toon's old SSH server needs legacy options (`-O` because the device has no sftp-server, `ssh-rsa` for the host key):
 
 ```bash
-scp *.qml *.js qmldir root@<toon-ip>:/qmf/apps/calendar/
+scp -O -oHostKeyAlgorithms=+ssh-rsa *.qml *.js qmldir root@<toon-ip>:/qmf/qml/apps/calendar-<version>/
 ```
 
-Restart the app on the device (or reboot) to apply changes.
+Example for version 1.1.17:
+
+```bash
+scp -O -oHostKeyAlgorithms=+ssh-rsa *.qml *.js qmldir root@10.0.0.126:/qmf/qml/apps/calendar-1.1.17/
+```
+
+To apply changes, restart the Toon GUI (this restarts all apps):
+
+```bash
+ssh -oHostKeyAlgorithms=+ssh-rsa root@<toon-ip>
+killall qt-gui
+```
 
 ## Configuration
 
 Open the calendar settings screen on your Toon to:
 
-- Add or remove ICS calendar URLs (includes a built-in list of public calendars)
+- Add or remove calendars by picking from a built-in list of public ICS calendars (there is no free-form URL input on the Toon; arbitrary private URLs must be edited into the settings JSON on the device)
 - Toggle notifications, color coding, dim-tile extended view, and balloon animations
 - Set the refresh interval (minimum 10 minutes via the UI)
 
@@ -40,4 +51,4 @@ Works on both Toon 1 and Toon 2 / NXT hardware. The app branches on the platform
 
 ## Version
 
-Current version: **1.1.16** — see [Changelog.txt](Changelog.txt) for full history.
+Current version: **1.1.17** — see [Changelog.txt](Changelog.txt) for full history.
