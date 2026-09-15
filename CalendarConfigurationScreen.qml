@@ -6,11 +6,6 @@ Screen {
 	id: wasteConfigurationScreen
 
 	property url calendarIndexUrl : "https://raw.githubusercontent.com/ToonSoftwareCollective/calendar_public_calendars/main/public_calendars.json"
-	property variant calendarsNameArray: []
-	property variant calendarsLinkArray: []
-	property variant calendarsActiveArray: []
-	property variant availableCalendars: {}
-	property string colorStr
 
 	screenTitle: "Kalender configuratie"
 
@@ -26,48 +21,71 @@ Screen {
 
 	function getPublicCalendars(){
 
-		//get list of public calendars
+		//get list of public calendars (the configured calendars are always shown, even when this fetch fails)
 
-		var j = app.calendarSettingsJson['Calendar_URL'].length;
-		var friendlyName  = "" ;
 		var http = new XMLHttpRequest();
-		var newColor = 0;
 		http.onreadystatechange=function() {
 			if (http.readyState === 4){
-				if (http.status === 200 || http.status === 300  || http.status === 302) {
-					calendarsNameArray= [];
-					calendarsLinkArray= [];
-					availableCalendars = JSON.parse(http.responseText)
-					var tmpArray = availableCalendars.public_calendars
-					urlModel.clear();
-					
-					for (var i = 0; i < app.calendarSettingsJson['Calendar_URL'].length; i++) {
-						colorStr = i.toString();
-						if (i > 9) colorStr = "9";
-						friendlyName  = "-";
-						for (var k in tmpArray) {
-							 if (tmpArray[k].link == app.calendarSettingsJson['Calendar_URL'][i]) {
-								 friendlyName = tmpArray[k].friendlyName;
-							}
+				if (http.status === 200) {
+					var tmpArray = [];
+					try {
+						var availableCalendars = JSON.parse(http.responseText);
+						if ((availableCalendars !== null) && (typeof availableCalendars === "object") && (availableCalendars.public_calendars instanceof Array)) {
+							tmpArray = availableCalendars.public_calendars;
 						}
-						urlModel.append({urlName: app.calendarSettingsJson['Calendar_URL'][i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStr), urlAlreadyAdded: true});
+					} catch(e) {
+						tmpArray = [];		// bad json from the index: show configured calendars only
 					}
-
-					j = parseInt(colorStr);
-
-					for (var i in tmpArray){
-						if (app.calendarSettingsJson['Calendar_URL'].indexOf(tmpArray[i].link) < 0) {
-							j = j + 1;
-							colorStr = j.toString();
-							if (j > 9) colorStr = "9";
-							urlModel.append({urlName: tmpArray[i].link, urlFriendlyName: tmpArray[i].friendlyName, urlColor: app.colorCodes(colorStr), urlAlreadyAdded: false});
-						}
-					}
+					fillUrlModel(tmpArray);
+				} else {
+					fillUrlModel(null);		// offline or error: still show the configured calendars instead of a stale/empty list
 				}
 			}
 		}
 		http.open("GET",calendarIndexUrl, true)
 		http.send()
+	}
+
+	function fillUrlModel(publicCalendars) {
+
+		// (re)build the list model: configured calendars first, then the public ones not yet added, colors continue per index
+
+		urlModel.clear();
+
+		var urls = app.calendarSettingsJson['Calendar_URL'];
+		if (!(urls instanceof Array)) {
+			urls = [];
+		}
+		var nextColor = urls.length;
+
+		for (var i = 0; i < urls.length; i++) {
+			var friendlyName  = "-";
+			if (publicCalendars) {
+				for (var k = 0; k < publicCalendars.length; k++) {
+					if (publicCalendars[k].link == urls[i]) {
+						friendlyName = publicCalendars[k].friendlyName;
+					}
+				}
+			}
+			urlModel.append({urlName: urls[i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStrForIndex(i)), urlAlreadyAdded: true});
+		}
+
+		if (publicCalendars) {
+			for (var p = 0; p < publicCalendars.length; p++) {
+				if (urls.indexOf(publicCalendars[p].link) < 0) {
+					urlModel.append({urlName: publicCalendars[p].link, urlFriendlyName: publicCalendars[p].friendlyName, urlColor: app.colorCodes(colorStrForIndex(nextColor)), urlAlreadyAdded: false});
+					nextColor = nextColor + 1;
+				}
+			}
+		}
+	}
+
+	function colorStrForIndex(index) {		// calendars beyond the tenth share the last color
+
+		if (index > 9) {
+			return "9";
+		}
+		return index.toString();
 	}
 
 	onCustomButtonClicked: {

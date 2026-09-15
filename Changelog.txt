@@ -1,3 +1,17 @@
+1.1.17
+- added the Yuvomi planner ICS feed to the default calendar list
+- fixed a potential app freeze on recurring events using weekday rules with an ordinal prefix (like 'first Monday': BYDAY=1MO)
+- refresh cycle is now race-proof and self-recovering: stale/duplicate calendar responses are dropped,
+  a watchdog timer finishes the cycle when a calendar server hangs, and an empty calendar list no longer stalls the app
+- refresh timer no longer collapses into a permanent 5-minute poll loop when there are no upcoming appointments
+- tile now shows 'geen afspraken' or 'geen kalenders geconfigureerd' instead of a stuck 'ophalen kalenders' message
+- reminders with unsupported (absolute) VALARM formats are skipped instead of firing at the wrong time;
+  TRIGGER values with parameters (TRIGGER;RELATED=START:) are now parsed correctly
+- events without a SUMMARY no longer produce a garbage title
+- settings file is validated on load and the refresh interval is clamped to 10-99 minutes
+- settings screen: calendar colors no longer break when zero calendars are configured,
+  and configured calendars remain visible when the public calendars index cannot be fetched
+
 1.1.16
 - properly handle recent minor change in google export format
 

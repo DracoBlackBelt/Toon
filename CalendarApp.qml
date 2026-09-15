@@ -50,10 +50,14 @@ App {
 		'ShowColors': "Yes",
 		'DimTileExtended': "No",
 		'RefreshIntervalInMinutes': 60,
-		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics"]
+		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics",
+		                 "https://planner.huisman.dev/feed/calendar/chaUmc_5TKGcuxvwyRRMc6k3WmFJ4ef-Cfzmz5hyv88.ics"]
 	}
 
 	property int numberOfCalendersToRead		// to keep track whether I am done with processing of the last calender
+	property int fetchGeneration: 0			// stamp per fetch cycle; callbacks of superseded or finished cycles are dropped
+	property bool fetchRunning: false		// true while a fetch cycle is in progress
+	property var activeRequests: []			// in-flight XMLHttpRequest's, aborted when a new cycle starts
 
 	FileIO {
 		id: userSettingsFile
@@ -75,34 +79,61 @@ App {
 
 		// read settings
 
+		applySettings();
+
+	}
+
+	function applySettings() {				// parse userSettings.json, only take known keys, keep current values on any error
+
 		try {
-			calendarSettingsJson = JSON.parse(userSettingsFile.read());
-			showNotificationSetting = calendarSettingsJson['ShowNotifications'];
-			showColorsSetting = calendarSettingsJson['ShowColors'];
-			showAnimationSetting = calendarSettingsJson['ShowAnimation'];
-			showDimTileExtended = calendarSettingsJson['DimTileExtended'];
-			refreshIntervalInMinutes = calendarSettingsJson['RefreshIntervalInMinutes'];
+			var json = JSON.parse(userSettingsFile.read());
+			if ((json === null) || (typeof json !== "object") || !(json['Calendar_URL'] instanceof Array)) {
+				return;					// missing or corrupt settings file: keep the defaults
+			}
+			calendarSettingsJson = json;
+			if (calendarSettingsJson['ShowNotifications']) showNotificationSetting = calendarSettingsJson['ShowNotifications'];
+			if (calendarSettingsJson['ShowColors']) showColorsSetting = calendarSettingsJson['ShowColors'];
+			if (calendarSettingsJson['ShowAnimation']) showAnimationSetting = calendarSettingsJson['ShowAnimation'];
+			if (calendarSettingsJson['DimTileExtended']) showDimTileExtended = calendarSettingsJson['DimTileExtended'];
+			if (calendarSettingsJson['RefreshIntervalInMinutes']) refreshIntervalInMinutes = clampRefreshInterval(calendarSettingsJson['RefreshIntervalInMinutes']);
 		} catch(e) {
 		}
+	}
 
+	function clampRefreshInterval(value) {			// the UI only allows 10-99 minutes, defend against hand-edited settings
+
+		var v = parseInt(value, 10);
+		if (isNaN(v)) return 60;
+		if (v < 10) return 10;
+		if (v > 99) return 99;
+		return v;
 	}
 
 	function sendNotification() {
 		notifications.send("kalender", "herinnering", false, "Kalender herinnering: "+ textNotification, "category=herinnering");
 	}
 
-	function calcAlarmOffsetInMs(trigger) {		// calculates milliseconds of the notifiction ahead of the start of the appointment
+	function calcAlarmOffsetInMs(trigger) {		// calculates milliseconds of the notifiction ahead of the start of the appointment, NaN for unsupported formats
 	
-		// find start of string for days, hours, minutes and seconds, example of the trigger: -P0DT0H20M0S
+		// only relative durations are supported (example of the trigger: -P0DT0H20M0S), absolute DATE-TIME triggers would fire at the wrong time
 
+		trigger = trigger.trim();
 		var iP = trigger.indexOf("P");
+		if ((iP != 0) && (iP != 1)) return NaN;
+		var signTrigger = 1;
+		if (iP == 1) {
+			if (trigger.substring(0,1) != "-") return NaN;
+			signTrigger = -1;
+		}
+
+		// find start of string for days, hours, minutes and seconds
+
+		var iT = trigger.indexOf("T", iP);
 		var iD = trigger.indexOf("D");
-		var iT = trigger.indexOf("T");
 		var iH = trigger.indexOf("H");
 		var iM = trigger.indexOf("M");
 		var iS = trigger.indexOf("S");
-		var signTrigger = 1;
-		if (trigger.substring(0,1) == "-") signTrigger = -1;
+		if (iT < 0) return NaN;
 		
 		// calc values for each item if present
 
@@ -111,12 +142,21 @@ App {
 		var vM = 0;
 		var vS = 0;
 
-		if (iD > 0) vD = trigger.substring(iP+1,iD) * signTrigger;
-		if (iH > 0) vH = trigger.substring(iT+1,iH) * signTrigger;
-		if (iM > 0) vM = trigger.substring((iH > 0 ? iH : iT)+1,iM) * signTrigger;
-		if (iS > 0) vS = trigger.substring(iM+1,iS) * signTrigger;
+		if (iD > iP) vD = durationPart(trigger.substring(iP+1,iD)) * signTrigger;
+		if (iH > iT) vH = durationPart(trigger.substring(iT+1,iH)) * signTrigger;
+		if (iM > iT) vM = durationPart(trigger.substring((iH > iT ? iH : iT)+1,iM)) * signTrigger;
+		if (iS > iM) vS = durationPart(trigger.substring(iM+1,iS)) * signTrigger;
 
 		return ((((((vD * 24) + vH) * 60) + vM) * 60) + vS) * 1000;
+	}
+
+	function durationPart(text) {				// numeric part of a duration string, anything unparseable becomes 0
+
+		var value = parseInt(text, 10);
+		if (isNaN(value)) {
+			return 0;
+		}
+		return value;
 	}
 
 	function saveSettings() {				// writes back userSettings.json withthe new shownotifcation setting (URL's are untouched)
@@ -142,15 +182,20 @@ App {
 
 		// re-read settings (URL's can be changed in the mean time by the user)
 
-		try {
-			calendarSettingsJson = JSON.parse(userSettingsFile.read());
-			showNotificationSetting = calendarSettingsJson['ShowNotifications'];
-			showColorsSetting = calendarSettingsJson['ShowColors'];
-			showDimTileExtended = calendarSettingsJson['DimTileExtended'];
-			showAnimationSetting = calendarSettingsJson['ShowAnimation'];
-			if (calendarSettingsJson['RefreshIntervalInMinutes']) refreshIntervalInMinutes  = calendarSettingsJson['RefreshIntervalInMinutes'] ;
-		} catch(e) {
+		applySettings();
+
+		// stamp this fetch cycle and supersede/abort any requests of a cycle still in flight
+
+		fetchGeneration = fetchGeneration + 1;
+		var thisGeneration = fetchGeneration;
+		fetchRunning = true;
+		for (var a = 0; a < activeRequests.length; a++) {
+			try {
+				activeRequests[a].abort();
+			} catch(e) {
+			}
 		}
+		activeRequests = [];
 
 		// clear tile labels
 
@@ -164,19 +209,49 @@ App {
 		calendarDateNext3Label = "";
 		calendarDateNext3Time = "";
 
-		// start reading each calendar
+		// start reading each calendar, or finish immediately when there is nothing to read
 
-		numberOfCalendersToRead = calendarSettingsJson['Calendar_URL'].length
-		for (var i = 0; i < calendarSettingsJson['Calendar_URL'].length; i++) {
-			readGoogleCalendar(calendarSettingsJson['Calendar_URL'][i],i);
+		var urls = [];
+		if (calendarSettingsJson['Calendar_URL'] instanceof Array) {
+			urls = calendarSettingsJson['Calendar_URL'];
+		}
+		numberOfCalendersToRead = urls.length;
+
+		if (numberOfCalendersToRead == 0) {		// would otherwise wait forever on callbacks that can never arrive
+			finishFetchCycle();					// labels set afterwards, processing replaces them with the 'no appointments' message
+			calendarDateNext1Label = "geen kalenders geconfigureerd";
+			calendarDateNext1LabelDim = "geen kalenders";
+			return;
+		}
+
+		fetchWatchdog.start();
+
+		for (var i = 0; i < urls.length; i++) {
+			readGoogleCalendar(urls[i], i, thisGeneration);
 		}
 	}
 
-	function readGoogleCalendar(calendarURL, indexCal) {		// function to read a single ICS calendar file
+	function finishFetchCycle() {				// single exit point of a fetch cycle: process what we have and schedule the next refresh
 
-		// console message
+		if (!fetchRunning) {
+			return;					// watchdog and last callback can race, only complete once
+		}
+		fetchRunning = false;
+		fetchWatchdog.stop();
+		fetchGeneration = fetchGeneration + 1;	// make straggling callbacks of this cycle drop out
 
-		// bunch of meaningless counters
+		try {
+			sortCalendarDates();
+			processCollectedCalendarDates();
+		} catch(e) {
+			endFirstAppointmentTimer.interval = 60000 * refreshIntervalInMinutes;	// still schedule the next refresh after a processing error
+			endFirstAppointmentTimer.start();
+		}
+	}
+
+	function readGoogleCalendar(calendarURL, indexCal, myGeneration) {	// function to read a single ICS calendar file
+
+		// bunch of (mostly) scratch counters used while parsing the ICS file
 
 		var h = 0;
 		var i = 0;
@@ -205,11 +280,22 @@ App {
 		var toDayStr = nowFormatted();		// calculate yyyy-mm-ddThh:mm for now() to filter out old entries later on
 
 		var xmlhttp = new XMLHttpRequest();	
+		var requestDone = false;				// one-shot guard: an abort() may fire a second DONE signal
+		activeRequests.push(xmlhttp);
 		xmlhttp.onreadystatechange=function() {
 	
 			if (xmlhttp.readyState == XMLHttpRequest.DONE) {
 
-				var aNode = xmlhttp.responseText;
+				if (requestDone || (myGeneration != fetchGeneration)) {
+					return;				// duplicate signal or response of a superseded/finished fetch cycle
+				}
+				requestDone = true;
+
+				var aNode = "";
+				try {
+				if (typeof xmlhttp.responseText == "string") {
+					aNode = xmlhttp.responseText;
+				}
 
 				j = aNode.indexOf("BEGIN:VEVENT");		// find first appointment
 				h = aNode.indexOf("DTSTART", j);
@@ -238,8 +324,9 @@ App {
 						triggerTxt = "                    ";
 						if ((n > 0) && (n < m)) {	// process reminder
 							o = aNode.indexOf("TRIGGER", n);
-							if ((o > 0) && (o < m)) {		//trigger for this event
-								triggerTxt = aNode.substring(o+8, aNode.indexOf("\n", o)) + "              ";
+							r = aNode.indexOf(":", o);		// skip possible parameters like TRIGGER;RELATED=START
+							if ((o > 0) && (o < m) && (r > 0) && (r < m)) {		//trigger for this event
+								triggerTxt = aNode.substring(r+1, aNode.indexOf("\n", o)) + "              ";
 							}
 						}
 						triggerTxt = triggerTxt.substring(0, 15);
@@ -283,7 +370,13 @@ App {
 						if (indexCal > 9) colorStr = "9";
 
 						if (toDayStr < dateTo) {
-							var summary = aNode.substring(k+8, l).replace(/\r$/, "");
+							var summary = "geen titel";
+							if ((k > 0) && (k < m)) {		// SUMMARY is optional in ICS, never pull garbage from the top of the file
+								r = aNode.indexOf(":", k);
+								if (r > 0) {
+									summary = aNode.substring(r+1, l).replace(/\r$/, "");
+								}
+							}
 							if (recurrenceTxt == "NONE") {
 								googleDates.push(dateFrom + " - " + dateTo + " - " + triggerTxt + " - " + colorStr + summary);
 							} else {
@@ -313,13 +406,15 @@ App {
 				if (googleDates.length > 0) {
 					calendarDatesString += googleDates.join("\n") + "\n";
 				}
+				} catch(e) {
+					// malformed ICS content or failed fetch: drop this calendar, never stall the fetch cycle
+				}
 
 				// when this one was the last calendar to read, start sorting en processing the results
 
 				numberOfCalendersToRead = numberOfCalendersToRead - 1;
 				if (numberOfCalendersToRead == 0) {
-					sortCalendarDates();
-					processCollectedCalendarDates();
+					finishFetchCycle();
 				}
 
 			}
@@ -337,7 +432,7 @@ App {
 			case "FR": return 5;
 			case "SA": return 6;
 			case "SU": return 0;
-			default: break;
+			default: return -1;		// unknown day (was undefined, which silently poisoned the BYDAY list)
 		}
 	}
 	
@@ -381,6 +476,8 @@ App {
 		var k = 0;
 		var recCounter = 999999;		//arbitrary max value
 		var recInterval = 1;			//default value INTERVAL tag
+		var parsed = NaN;			//scratch for numeric recurrence tag parsing
+		var recGuard = 0;			//iteration cap to make runaway recurrences impossible
 		var recBydayList = [];			//list of days in the week to repeat in WEEKLY recurring items
 		var recByday = false;			//flag for list of days in the week to repeat in WEEKLY recurring items
 		var recBydaySource = "";
@@ -408,10 +505,11 @@ App {
 			k = recurrenceTxt.length;
 
 			if ((j < k) && ( j > 0)) {
-				recCounter = parseInt(recurrenceTxt.substring(i+6, j));	
+				parsed = parseInt(recurrenceTxt.substring(i+6, j), 10);
 			} else {
-				recCounter = parseInt(recurrenceTxt.substring(i+6, k));	
+				parsed = parseInt(recurrenceTxt.substring(i+6, k), 10);
 			}
+			if (!isNaN(parsed) && (parsed >= 0)) recCounter = parsed;	// unparseable COUNT keeps the default
 		}	
 
 		// extract INTERVAL value from the recurrence string if existing
@@ -423,10 +521,11 @@ App {
 			k = recurrenceTxt.length;
 
 			if ((j < k) && ( j > 0)) {
-				recInterval = parseInt(recurrenceTxt.substring(i+9, j));	
+				parsed = parseInt(recurrenceTxt.substring(i+9, j), 10);
 			} else {
-				recInterval = parseInt(recurrenceTxt.substring(i+9, k));	
+				parsed = parseInt(recurrenceTxt.substring(i+9, k), 10);
 			}
+			if (!isNaN(parsed) && (parsed >= 1)) recInterval = parsed;	// unparseable or zero INTERVAL keeps the default of 1
 		}	
 
 		// extract BYDAY value from the recurrence string if existing
@@ -446,10 +545,13 @@ App {
 				// create array with all days specified and translate these to numbers 0 through 6 (Mon - Sun)
 
 			var sourceDays = recBydaySource.split(",");
-			for (var j = 0; j < sourceDays.length; j++) {
-				recBydayList.push(dayNumbers(sourceDays[j]));
+			for (var d = 0; d < sourceDays.length; d++) {
+				var dayNr = dayNumbers(sourceDays[d].slice(-2));	// strip ordinal prefixes: "1MO" / "-1FR" become "MO" / "FR"
+				if (dayNr >= 0) {
+					recBydayList.push(dayNr);
+				}
 			}
-			recByday = (sourceDays.length > 1);
+			recByday = (recBydayList.length > 1);
 		}	
 
 		// apply yearly recurring setting (take into account the INTERVAL and COUNT tags)
@@ -458,12 +560,15 @@ App {
 		i = recurrenceTxt.indexOf("FREQ=YEARLY");
 
 		if (i > -1 ) {
+			recGuard = 0;
 			if (allDayEvent == "Yes") {
 				while (compareNowDateLocal(now, dateLocal) && (recCounter > 0)) {
 					for (var j = 0; j < recInterval; j++) {
 						dateLocal.setFullYear(dateLocal.getFullYear() + 1);
 					}
 					recCounter = recCounter - 1;
+					recGuard = recGuard + 1;
+					if (recGuard > 1000) return ("1900-01-01T01:01");	// runaway recurrence, drop the entry
 				}
 			} else {
 				while ((now > dateLocal) && (recCounter > 0)) {
@@ -471,6 +576,8 @@ App {
 						dateLocal.setFullYear(dateLocal.getFullYear() + 1);
 					}
 					recCounter = recCounter - 1;
+					recGuard = recGuard + 1;
+					if (recGuard > 1000) return ("1900-01-01T01:01");	// runaway recurrence, drop the entry
 				}
 			}
 		}
@@ -485,18 +592,24 @@ App {
 			if (recByday) {			// if BYDAY tag is used, skip to first day specified						
 
 				if ((recByday) && (recBydayList.length > 0)) {
+					recGuard = 0;
 					while ((recBydayList.indexOf(dateLocal.getDay()) < 0) || (now > dateLocal)) {
 						dateLocal.setDate(dateLocal.getDate() + 1);
+						recGuard = recGuard + 1;
+						if (recGuard > 400) return ("1900-01-01T01:01");	// unresolvable BYDAY list, drop the entry instead of hanging the app
 					}						
 				}
 
 			} else {
+				recGuard = 0;
 				while ((now > dateLocal) && (recCounter > 0)) {
 
 					for (var j = 0; j < recInterval; j++) {
 						dateLocal.setDate(dateLocal.getDate() + 7);
 					}
 					recCounter = recCounter - 1;
+					recGuard = recGuard + 1;
+					if (recGuard > 1000) return ("1900-01-01T01:01");	// runaway recurrence, drop the entry
 				}
 			}
 		}
@@ -507,11 +620,14 @@ App {
 		i = recurrenceTxt.indexOf("FREQ=MONTHLY");
 
 		if (i > -1 ) {
+			recGuard = 0;
 			while ((now > dateLocal) && (recCounter > 0)) {
 				for (var j = 0; j < recInterval; j++) {
 					dateLocal.setMonth(dateLocal.getMonth() + 1);
 				}
 				recCounter = recCounter - 1;
+				recGuard = recGuard + 1;
+				if (recGuard > 1000) return ("1900-01-01T01:01");	// runaway recurrence, drop the entry
 			}
 		}
 
@@ -521,11 +637,14 @@ App {
 		i = recurrenceTxt.indexOf("FREQ=DAILY");
 
 		if (i > -1 ) {
+			recGuard = 0;
 			while ((now > dateLocal) && (recCounter > 0)) {
 				for (var j = 0; j < recInterval; j++) {
 					dateLocal.setDate(dateLocal.getDate() + 1);
 				}
 				recCounter = recCounter - 1;
+				recGuard = recGuard + 1;
+				if (recGuard > 1000) return ("1900-01-01T01:01");	// runaway recurrence, drop the entry
 			}
 		}
 
@@ -630,7 +749,7 @@ App {
 		var offsetFirstNextAppointmentNoticationTimer = 999999999;
 		var endDate = new Date();
 		var nowDate = new Date();
-		var calendarfile= new XMLHttpRequest();
+		endDateFirstAppointment = "";		// reset: a stale past date would collapse the refresh timer to its 5 minute floor
 		showNotification = false;
 
 		var response = calendarDatesString.split("\n");
@@ -642,12 +761,15 @@ App {
 					// check for earliest notification time and text to display
 
 				if (response[i].slice(38, 53).trim() !== "") {
-					endDate = new Date(response[i].slice(0, 4), response[i].slice(5, 7) - 1, response[i].slice(8, 10), response[i].slice(11, 13), response[i].slice(14, 16), 0);
-					thisOffset = endDate - nowDate + calcAlarmOffsetInMs(response[i].slice(38, 53)) - 3600000;
-					if ((thisOffset < offsetNoticationTimer) && (thisOffset > 0)) {
-						offsetNoticationTimer = thisOffset;
-						textNotification = response[i].slice(57);
-						showNotification = true;
+					var alarmOffset = calcAlarmOffsetInMs(response[i].slice(38, 53));
+					if (!isNaN(alarmOffset)) {		// only relative alarms are scheduled, unsupported formats return NaN instead of firing at a wrong time
+						endDate = new Date(response[i].slice(0, 4), response[i].slice(5, 7) - 1, response[i].slice(8, 10), response[i].slice(11, 13), response[i].slice(14, 16), 0);
+						thisOffset = endDate - nowDate + alarmOffset - 3600000;	// -3600000 is an intentional extra hour ahead of the alarm (device clock margin)
+						if ((thisOffset < offsetNoticationTimer) && (thisOffset > 0)) {
+							offsetNoticationTimer = thisOffset;
+							textNotification = response[i].slice(57);
+							showNotification = true;
+						}
 					}
 				}
 					// set timer for start first appointment (to start animation)
@@ -716,6 +838,12 @@ App {
 				}
 				counter = counter + 1;
 			}
+		}
+
+		if (counter == 0) {		// nothing upcoming: replace the 'ophalen kalenders' fetching message instead of keeping it forever
+			calendarDateNext1Label = "geen afspraken";
+			calendarDateNext1LabelDim = "geen afspraken";
+			calendarDateNext1DateDim = "";
 		}
 
 		if ((showNotification === true) && (showNotificationSetting == "Yes")) {
@@ -859,9 +987,24 @@ App {
 		repeat: true
 		running: false
 		onTriggered: {
-			processCollectedCalendarDates();
+			if (!fetchRunning) {		// an in-flight fetch cycle processes fresh data on completion anyway
+				processCollectedCalendarDates();
+			}
 			interval = getMSecTill12oclock(); 
 			start();
+		}
+	}
+
+		// watchdog: a hung or very slow fetch must never stall the refresh cycle (no XMLHttpRequest.timeout available on this Qt version)
+
+	Timer {
+		id: fetchWatchdog
+		repeat: false
+		running: false
+		interval: 120000			// hard cap of 2 minutes per fetch cycle
+		onTriggered: {
+			numberOfCalendersToRead = 0;
+			finishFetchCycle();		// process whatever arrived so far, stragglers drop out via the generation stamp
 		}
 	}
 
