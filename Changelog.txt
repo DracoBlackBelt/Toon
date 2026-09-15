@@ -1,3 +1,16 @@
+9.0.12
+- weersverwachting-tekst was beschadigd: het verwijderen van html-entiteiten at ook 5 echte karakters vóór elk &nbsp;/&rsquo; op
+- settings-scherm gaf bij het openen een JavaScript-fout door resten van de in 9.0.8 verwijderde auto-dim helderheidsopties
+- weerstation-selectie: een station ná het gefilterde "Zeeplatform" selecteerde het verkeerde station (indexverschuiving)
+- grote weerkaarten (UV/pollen/muggen/temp/wind) toonden tussen 00:00 en 02:00 de kaart van gisteren; datum wordt nu lokaal in plaats van UTC berekend
+- radarbeeld-urls overal op width=/height= gezet; de API negeert w=/h= en gaf toen het full-size beeld (128 KB i.p.v. 48 KB)
+- nachtelijk onweer-icoon verwees naar een bestandsnaam met een spatie (bestond niet)
+- weerwaarden van 0 (bijv. windkracht 0 BFT) werden niet meer bijgewerkt; tonen nu actuele data
+- 5-daagse voorspelling wordt direct uit de feed opgebouwd; de verouderde "gisteren-kolom" kniptruc is verwijderd
+- regentegel: delen door nul beschermd; restanten van de verwijderde y-as-schaalinstelling opgeruimd
+- HTTP-requests worden na 60-90 seconden afgebroken zodat hangende requests niet opstapelen
+- dode code, ongebruikte eigenschappen en ongebruikte drawables verwijderd; UI-strings in qsTr() gezet
+
 9.0.11
 - small fix for radar image size on a Toon 1
 

@@ -39,4 +39,4 @@ Works on both Toon 1 and Toon 2 / NXT hardware (radar images and layout branch o
 
 ## Version
 
-Current version: **9.0.11** — see [Changelog.txt](Changelog.txt) for full history.
+Current version: **9.0.12** — see [Changelog.txt](Changelog.txt) for full history.

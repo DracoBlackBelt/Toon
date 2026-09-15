@@ -4,13 +4,13 @@ import BasicUIControls 1.0;
 
 Screen {
 	id: buienradarStationScreen
-	screenTitle: "Selecteer weerstation"
+	screenTitle: qsTr("Selecteer weerstation")
 
 	onShown: {
 
 		stationFilterModel.clear();
 		for (var i = 0; i < app.stationArray.length; i++) {
-			if (app.stationArray[i].substring (0,11) !== "Zeeplatform") stationFilterModel.append({name: app.stationArray[i]});
+			if (app.stationArray[i].substring (0,11) !== "Zeeplatform") stationFilterModel.append({name: app.stationArray[i], idx: i});
 		}
 	}
 

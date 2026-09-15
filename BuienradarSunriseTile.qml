@@ -9,7 +9,7 @@ Tile {
 
 	onClicked: {
 		app.radarimagesSmallurl ="http://toon/";  //resetimage
-		app.radarimagesSmallurl ="https://api.buienradar.nl/image/1.0/RadarMapNL?w=180&h=180";
+		app.radarimagesSmallurl ="https://api.buienradar.nl/image/1.0/RadarMapNL?width=180&height=180";
 		if (app.buienradarDetailsScreen)
 			app.buienradarDetailsScreen.show();
 	}
@@ -32,7 +32,7 @@ Tile {
 
 	Text {
 		id: weatherSunsetText
-		text: "Zon op / onder"
+		text: qsTr("Zon op / onder")
 		anchors {
 			left: weatherSunrise.left
 			leftMargin: isNxt ? 16 : 12
