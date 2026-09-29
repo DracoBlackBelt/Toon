@@ -7,14 +7,18 @@ Screen {
     screenTitle: qsTr("Home Assistant Configuratie")
     hasBackButton: true
 
-    // --- layout metrics, branch on hardware (isNxt = Toon 2/NXT) ---
-    property int edge: isNxt ? 20 : 8
-    property int rowH: isNxt ? 36 : 26
-    property int rowGap: isNxt ? 6 : 4
-    property int fieldH: isNxt ? 35 : 24
-    property int wideFieldW: isNxt ? 560 : 268
-    property int halfFieldW: isNxt ? 295 : 190
-    property int toggleBlockW: isNxt ? 200 : 105
+    // --- layout metrics: scale with the real screen width (800 = design size),
+    //     field widths are derived from the space that is really there ---
+    property real u: (width > 0) ? width / 800 : 1
+    property int edge: Math.round(20 * u)
+    property int inset: Math.round(20 * u)
+    property int rowH: Math.round(36 * u)
+    property int rowGap: Math.round(6 * u)
+    property int toggleBlockW: Math.round(200 * u)
+    property int wideFieldW: connectionGrid.width - toggleBlockW - edge
+    property int halfFieldW: Math.floor((configPanel.width - 2 * inset - edge) / 2)
+    // the fullest page has 5 rows; shrink the fields until they fit the panel
+    property int fieldH: Math.max(Math.round(22 * u), Math.min(Math.round(35 * u), Math.floor((configPanel.height - panelTitle.height - panelTitle.y - 2 * rowGap) / 5) - rowGap))
 
     // --- drafts: edited here, only pushed to the app on "Opslaan" ---
     property string draftServer: ""
@@ -26,6 +30,7 @@ Screen {
     property var draftScenes: ["", "", "", ""]
     property string draftAlarmEntity: ""
     property string draftAlarmCode: ""
+    property string draftSlider: ""
 
     // 0 = sensors, 1 = scenes, 2 = switches, 3 = alarm
     property int page: 0
@@ -49,7 +54,7 @@ Screen {
     }
 
     function validatePort(text, isFinal) {
-        if (isFinal && !/^[0-9]*$/.test(text)) {
+        if (isFinal && (!/^[0-9]+$/.test(text) || parseInt(text, 10) < 1 || parseInt(text, 10) > 65535)) {
             return {content: qsTr("Poortnummer onjuist")};
         }
         return null;
@@ -67,13 +72,14 @@ Screen {
         draftScenes = app.sceneEntities.slice();
         draftAlarmEntity = app.alarmEntity;
         draftAlarmCode = app.alarmCode;
+        draftSlider = app.sliderEntity;
         page = 0;
     }
 
     onCustomButtonClicked: {
         app.saveConfiguration(draftServer, draftPort, draftSsl, draftClock,
                               draftSensors, draftSwitches, draftScenes,
-                              draftAlarmEntity, draftAlarmCode);
+                              draftAlarmEntity, draftAlarmCode, draftSlider);
         hide();
     }
 
@@ -98,7 +104,7 @@ Screen {
             id: serverField
             width: wideFieldW
             height: rowH
-            leftTextAvailableWidth: isNxt ? 250 : 110
+            leftTextAvailableWidth: Math.round(160 * u)
             leftText: qsTr("Server IP:")
             inputText: draftServer
 
@@ -129,14 +135,14 @@ Screen {
             }
             width: wideFieldW
             height: rowH
-            leftTextAvailableWidth: isNxt ? 250 : 110
+            leftTextAvailableWidth: Math.round(160 * u)
             leftText: qsTr("Poort:")
             inputText: draftPort
 
             onClicked: {
                 qnumKeyboard.open(qsTr("Voer het poortnummer van Home Assistant in"), portField.inputText, "", 1,
                                   function (text) { draftPort = text.trim(); }, validatePort);
-                qnumKeyboard.maxTextLength = 4;
+                qnumKeyboard.maxTextLength = 5;
                 qnumKeyboard.state = "num_integer_clear_backspace";
             }
         }
@@ -177,10 +183,10 @@ Screen {
 
         Text {
             id: panelTitle
-            x: 20
+            x: inset
             y: 8
             text: page == 0 ? qsTr("Sensoren") : (page == 1 ? qsTr("Scenes") : (page == 2 ? qsTr("Schakelaars") : qsTr("Alarm")))
-            font.pixelSize: isNxt ? 14 : 10
+            font.pixelSize: Math.max(9, Math.round(14 * u))
             font.family: qfont.semiBold.name
             color: "Black"
         }
@@ -195,7 +201,7 @@ Screen {
                 model: 2
                 delegate: Column {
                     property int column: index
-                    x: column == 0 ? 20 : 20 + halfFieldW + edge
+                    x: column == 0 ? inset : inset + halfFieldW + edge
                     y: panelTitle.y + panelTitle.height + rowGap
                     spacing: rowGap
 
@@ -205,7 +211,7 @@ Screen {
                             property int slot: column * 4 + index
                             width: halfFieldW
                             height: fieldH
-                            leftTextAvailableWidth: 30
+                            leftTextAvailableWidth: Math.round(30 * u)
                             leftText: (slot + 1) + ":"
                             inputText: draftSensors[slot]
 
@@ -226,16 +232,16 @@ Screen {
             visible: page == 1
 
             Column {
-                x: 20
+                x: inset
                 y: panelTitle.y + panelTitle.height + rowGap
                 spacing: rowGap
 
                 Repeater {
                     model: 4
                     delegate: EditTextLabel4421 {
-                        width: parent.parent.width - 40
+                        width: scenesPage.width - 2 * inset
                         height: fieldH
-                        leftTextAvailableWidth: 30
+                        leftTextAvailableWidth: Math.round(90 * u)
                         leftText: (index + 1) + ":"
                         inputText: draftScenes[index]
 
@@ -243,6 +249,19 @@ Screen {
                             qkeyboard.open(qsTr("Voer de entity-id in voor de scene"), inputText,
                                            function (text) { homeAssistantConfigurationScreen.storeScene(index, text); });
                         }
+                    }
+                }
+
+                EditTextLabel4421 {
+                    width: scenesPage.width - 2 * inset
+                    height: fieldH
+                    leftTextAvailableWidth: Math.round(90 * u)
+                    leftText: qsTr("Slider:")
+                    inputText: draftSlider
+
+                    onClicked: {
+                        qkeyboard.open(qsTr("Voer de entity-id in voor de slider (input_number)"), inputText,
+                                       function (text) { draftSlider = text.trim(); });
                     }
                 }
             }
@@ -258,7 +277,7 @@ Screen {
                 model: 2
                 delegate: Column {
                     property int column: index
-                    x: column == 0 ? 20 : 20 + halfFieldW + edge
+                    x: column == 0 ? inset : inset + halfFieldW + edge
                     y: panelTitle.y + panelTitle.height + rowGap
                     spacing: rowGap
 
@@ -268,7 +287,7 @@ Screen {
                             property int slot: column * 3 + index
                             width: halfFieldW
                             height: fieldH
-                            leftTextAvailableWidth: 30
+                            leftTextAvailableWidth: Math.round(30 * u)
                             leftText: (slot + 1) + ":"
                             inputText: draftSwitches[slot]
 
@@ -289,15 +308,15 @@ Screen {
             visible: page == 3
 
             Column {
-                x: 20
+                x: inset
                 y: panelTitle.y + panelTitle.height + rowGap
-                width: alarmPage.width - 40
+                width: alarmPage.width - 2 * inset
                 spacing: rowGap
 
                 EditTextLabel4421 {
                     width: parent.width
                     height: fieldH
-                    leftTextAvailableWidth: isNxt ? 300 : 130
+                    leftTextAvailableWidth: Math.round(300 * u)
                     leftText: qsTr("Alarm entity-id:")
                     inputText: draftAlarmEntity
 
@@ -310,7 +329,7 @@ Screen {
                 EditTextLabel4421 {
                     width: parent.width
                     height: fieldH
-                    leftTextAvailableWidth: isNxt ? 300 : 130
+                    leftTextAvailableWidth: Math.round(300 * u)
                     leftText: qsTr("Vaste code voor scherpstellen:")
                     inputText: draftAlarmCode != "" ? "*****" : ""
 

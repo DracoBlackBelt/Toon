@@ -1,3 +1,31 @@
+2.1.0
+ - Audit release. Fixed: main screen overlap - the alarm dialpad (right-aligned to its title, 170 px wide)
+   sat on top of the switch column, and the dialpad ran off the bottom of the screen. The screen is now
+   three anchored columns (scenes+slider | switches | alarm) whose sizes are derived from the real screen
+   width and from the height that is left, so nothing overlaps or clips on any resolution.
+ - Fixed: layout constants assumed isNxt = 800x480 and !isNxt = 400x240 (real Toon 1 is 800x480, so it got
+   half-size widgets). All three screens now scale with the actual width instead.
+ - Fixed: config screen second column and the SSL/clock toggles ran past the screen edge; port keyboard
+   allowed only 4 digits (ports go to 65535); port is now validated 1-65535.
+ - Fixed: sensor card overlapped the scene titles when few/no sensors were set; sensors are now listed
+   compacted (no holes for empty slots) in two balanced columns, tile shows the first 3 configured sensors.
+ - Fixed: sensor values - long decimals are rounded (21.3400001 -> 21.34), 'unavailable'/'unknown' shown as
+   n.b./?, binary_sensor (open/dicht, beweging, aan/uit), climate (current temperature), weather, person.
+   Value text no longer elided on the left ("...5 C") and no longer squeezes the name to nothing.
+ - Fixed: 'connected' never dropped after Home Assistant went away (blank values forever); a cycle where every
+   request fails or gets 401 now disconnects, so the 60 s timer retries. Poll counter could go negative after
+   a watchdog timeout; stale callbacks no longer touch it.
+ - Fixed: JSON request bodies are built with JSON.stringify (entity ids/codes with quotes broke them);
+   token file tolerates quotes/newline/'Bearer ' prefix; server field accepts 'http://host:port/' input.
+ - Added: status banner on the main screen (no token, token rejected, unreachable, entity not found with the
+   offending entity id, failed command) - previously all of these were invisible unless debug was on.
+ - Added: slider (input_number / number) back as - / + buttons using the entity's own min/max/step
+   (setting 'Slider', configured on the Scenes page).
+ - Added: scene slots also accept script/automation/button/input_button; switch slots also accept automation,
+   cover, siren, humidifier, remote and group entities.
+ - Added: alarm state shown as readable Dutch text (armed_away -> Aan (weg), triggered, pending...),
+   disarm also while pending/arming/triggered, and panels without a code no longer require typing one.
+
 2.0.1
  - Regenerated lang/*.qm from the current qsTr sources with lrelease (Qt 6.11); the shipped catalogs were stale upstream stubs with no entries.
  - Verified all QML with qmllint (0 errors, only expected missing-device-module warnings) and lupdate round-trip (0 new/0 obsolete strings).

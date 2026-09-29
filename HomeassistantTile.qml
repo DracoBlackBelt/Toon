@@ -2,7 +2,7 @@ import QtQuick 2.1
 import qb.components 1.0
 
 /*
- * Home screen tile: optional clock + first 3 configured sensors.
+ * Home screen tile: optional clock + first 3 configured sensors (empty slots skipped).
  * Fixed in this rewrite (upstream had operator-precedence bugs):
  *   font.pixelSize: X - isNxt ? 5 : 4   ->  X - (isNxt ? 5 : 4)
  *   width: tileGrid.width - isNxt ? 50 : 40 -> tileGrid.width - (isNxt ? 50 : 40)
@@ -85,12 +85,11 @@ Tile {
         }
 
         Repeater {
-            model: 3
+            model: Math.min(3, app.activeSensors.length)
             delegate: Item {
+                readonly property int slot: app.activeSensors[index]
                 width: tileGrid.width
-                height: active ? (isNxt ? 25 : 20) : 0
-                visible: active
-                readonly property bool active: app.sensorEntity(index) != ""
+                height: isNxt ? 25 : 20
 
                 Text {
                     anchors {
@@ -99,7 +98,7 @@ Tile {
                         verticalCenter: parent.verticalCenter
                         rightMargin: 6
                     }
-                    text: app.sensorName(index)
+                    text: app.sensorName(slot)
                     elide: Text.ElideRight
                     color: (typeof dimmableColors !== 'undefined') ? dimmableColors.clockTileColor : colors.clockTileColor
                     font.pixelSize: isNxt ? 15 : 12
@@ -109,13 +108,15 @@ Tile {
 
                 Text {
                     id: tileSensorValue
-                    width: isNxt ? 110 : 75
                     anchors {
                         right: parent.right
                         verticalCenter: parent.verticalCenter
                     }
-                    text: app.sensorValue(index)
-                    elide: Text.ElideLeft
+                    // as wide as the value needs, but never more than 60% of the row
+                    width: Math.min(implicitWidth, parent.width * 0.6)
+                    horizontalAlignment: Text.AlignRight
+                    text: app.sensorValue(slot)
+                    elide: Text.ElideRight
                     color: (typeof dimmableColors !== 'undefined') ? dimmableColors.clockTileColor : colors.clockTileColor
                     font.pixelSize: isNxt ? 15 : 12
                     font.family: qfont.regular.name

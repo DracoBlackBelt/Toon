@@ -6,11 +6,12 @@ This is a rewritten fork of the [ToonSoftwareCollective/homeassistant](https://g
 
 ## Features
 
-- Up to 8 sensors on a tile (with optional clock) and in the app screen
-- Up to 4 scene buttons and 5 switch/toggle entities (`switch`, `light`, `input_boolean`, `fan`)
+- Up to 8 sensors in the app screen and the first 3 on the tile (with optional clock); numbers are rounded, binary sensors/climate/weather/person shown readably
+- Up to 4 scene buttons (`scene`, `script`, `automation`, `button`, `input_button`), 5 switch/toggle entities (`switch`, `light`, `input_boolean`, `fan`, `automation`, `cover`, `siren`, `humidifier`, `remote`, `group`) and one `-`/`+` slider (`input_number`/`number`)
 - Alarm control panel with on-screen code dialpad (arm away / disarm)
 - Settings screens for server, port, SSL, clock tile and all entity ids
-- Works on Toon 1 and Toon 2/NXT (800x480 and 400x240)
+- On-screen status banner explaining connection, token and entity-id problems
+- Works on Toon 1 (800x480) and Toon 2 (1024x600): the layout scales with the real screen size
 
 ## Prerequisites
 
@@ -53,6 +54,7 @@ Settings are stored at `/mnt/data/tsc/homeassistant.userSettings.json`:
 | `SSL` | `"yes"` to use https |
 | `Clock` | 1 = show clock on tile |
 | `Sensors` / `Switches` / `Scenes` | entity id arrays (8 / 5 / 4 slots) |
+| `Slider` | `input_number` / `number` entity id |
 | `Alarm` | `alarm_control_panel` entity id |
 | `AlarmCode` | code sent when arming (stored plaintext, like the HA app convention) |
 
@@ -60,4 +62,4 @@ State is polled every 60 seconds and on every manual interaction; while disconne
 
 ## Version
 
-Current version: **2.0.0** — see [Changelog.txt](Changelog.txt) for full history.
+Current version: **2.1.0** — see [Changelog.txt](Changelog.txt) for full history.
