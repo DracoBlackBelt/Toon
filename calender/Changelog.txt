@@ -1,0 +1,125 @@
+1.1.17
+- added the Yuvomi planner ICS feed to the default calendar list
+- fixed a potential app freeze on recurring events using weekday rules with an ordinal prefix (like 'first Monday': BYDAY=1MO)
+- refresh cycle is now race-proof and self-recovering: stale/duplicate calendar responses are dropped,
+  a watchdog timer finishes the cycle when a calendar server hangs, and an empty calendar list no longer stalls the app
+- refresh timer no longer collapses into a permanent 5-minute poll loop when there are no upcoming appointments
+- tile now shows 'geen afspraken' or 'geen kalenders geconfigureerd' instead of a stuck 'ophalen kalenders' message
+- reminders with unsupported (absolute) VALARM formats are skipped instead of firing at the wrong time;
+  TRIGGER values with parameters (TRIGGER;RELATED=START:) are now parsed correctly
+- events without a SUMMARY no longer produce a garbage title
+- settings file is validated on load and the refresh interval is clamped to 10-99 minutes
+- settings screen: calendar colors no longer break when zero calendars are configured,
+  and configured calendars remain visible when the public calendars index cannot be fetched
+
+1.1.16
+- properly handle recent minor change in google export format
+
+1.1.15
+- added public calendar repository for easy adding of calendars in the settings screen.
+  Currently F1 calendars are added.
+  if you have suggestions for extra public calendars, drop me a note on domoticaforum.eu
+- limit the length of appointments on the main screen to avoid overlap between columns
+
+1.1.14
+- limit meeting titles to 25 characters on the tile
+
+1.1.12
+- made the refresh cycle configurable
+
+1.1.11
+- balloon animations are only stopped if this app started them.
+  this to prevent accidentally killing animations from other apps.
+- when switching the setting on showing animations to 'off' the current animation will be stopped
+  if it was started by this app
+
+1.1.10
+- further improved the balloon animation functionality for full day yearly events (final now)
+  balloons will show from 00:02 to 23:59 during the day for all day events.
+- Yearly all day events are now also visible after a gui-restart during the that day
+
+1.1.9
+- added option to show balloons on days with yearly recurring appointments.
+  (assuming these are birthdays, option can be enabled in the settings screen) 
+
+1.1.8
+- dimmableColors update
+
+1.1.7
+- fixed 6 hour refresh cycle (wasn't working properly in 1.1.6)
+
+1.1.6
+- calendars are refreshed at least every 6 hours (or earlier when first appointment ends)
+- option added to show first three appointments in dim state as well
+
+1.1.5
+- store settings in /mnt/data/tsc folder
+
+1.1.4
+-firmware 5.2 compatibilty
+
+1.1.3
+- now supporting Microsoft Office365 Outlook ics files
+- now processing UNTIL entries without timestamp correctly
+- significantly increased performance of handling expired recurring items
+
+1.0.11
+- when the end ddate is missing it will be the same as the start date (might change to blank in the future)
+
+1.0.10
+- date of the first appointment on the tile in dim state now shows as 'vandaag', 'morgen' and
+  'overmorgen' for the coming three days.
+- Later dates are now formatted as "Ma 18 december" on the tile in dim state
+- cosmetic redesign on the tile in dim state
+
+1.0.9
+- bugfix: error message regarding reading the settings file showed too often
+
+1.0.8
+- added colors for each appointment to identify the source calendar
+- configuration screen now shows all source calendars plus associated color
+- display of colors can be switched on/off in the configuration screen
+- the full screen with appointments is now scrollable
+  from recurring items only the first next occurrence is shown for the time being.
+
+
+1.0.7
+- one bug fix with full-day events which are shown 24h too long on screen
+
+1.0.6
+- the time shift bug has been solved for recurring appointments
+- recurring item tag "COUNT" is now implemented, when the last of the series is in the past, the item will not be shown anymore
+- recurring item tag "INTERVAL" is now implemented, used to repeat an appointment every 4 weeks, or every 2 months etc
+- weekly recurring item with specifc days is now implemented, like repeat every workday
+  (combination of repeat WEEKLY and a list of days like MO TU WE TH FR)
+
+1.0.5
+- removed re-writing of userSettings.json by the app
+- various bug fixes
+- expanded support for recuring items (now supports YEARLY, MONTHLY, WEEKLY, DAILY and the UNTIL tags)
+  not yet supported recurring tags: INTERVAL (e.q. every two weeks) and COUNT (repeat x times)
+  still some other issues to resolve with recurring items but this version is already much better then 1.0.3
+- added support for iCloud calendars (beta, but seems ok, needs more thorough testing)
+- recurring items are preceded by '(*)' for now, need something nicer in the future
+
+
+1.0.3
+- rewritten the core engine (3 times as fast now). No delays anymore during boot of Toon 1
+  Calenders start getting retrieved 2,5 minutes after finishing the start of the calendar app
+  to allow the boot process of Toon 1 to finish
+- the first occurence of simple recurring items are now shown for appointments which repeat weekly or yearly.
+  (more complex recurrences like repeat weekly on Mon and Thu and Fri are not yet supported) 
+
+1.0.2
+- added issuing a notification according to the reminder setting in the appointments
+- added a config screen to be able to disable the notifications :-)
+- if the userSettings.json file doesn't exists, a default one is created with the NL holidays calendar
+- appointments in the past are not processed at all anymore
+
+1.0.1
+- prevented long calendar event titles would go across the tile boundaries 
+- sometimes appointment dates were corrupted
+- some calendars start with summer time events, creating a few fake entries on Toon. I am skipping these now.
+
+1.0.0
+- initial release to show your google calendar entries
