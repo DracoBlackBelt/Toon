@@ -8,7 +8,9 @@ Item {
 
     property string labelText: ""
     property bool checked: false
-    property int labelFont: isNxt ? 12 : 9
+    // proportional to the block height, so it follows the screen scale
+    property int labelFont: Math.max(9, Math.round(height * 0.36))
+    property int labelMargin: Math.round(height * 0.3)
 
     signal toggled()
 
@@ -17,14 +19,13 @@ Item {
         anchors {
             left: parent.left
             verticalCenter: parent.verticalCenter
-            leftMargin: isNxt ? 20 : 4
+            leftMargin: labelMargin
         }
-        width: parent.width - (isNxt ? 20 : 4) - blockSwitch.width - 8
+        width: parent.width - labelMargin - blockSwitch.width - 8
         text: labelText
         font.pixelSize: labelFont
         elide: Text.ElideRight
         color: "Black"
-        wrapMode: Text.WordWrap
     }
 
     ToggleSwitch {
@@ -33,8 +34,8 @@ Item {
             right: parent.right
             verticalCenter: parent.verticalCenter
         }
-        width: isNxt ? 54 : 40
-        height: isNxt ? 36 : 24
+        height: Math.round(parent.height * 0.9)
+        width: Math.round(height * 1.5)
         checked: toggleBlock.checked
         onToggled: toggleBlock.toggled()
     }
