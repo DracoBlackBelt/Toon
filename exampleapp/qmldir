@@ -1,0 +1,3 @@
+module apps.example
+ExampleApp 1.0 ExampleApp.qml
+ExampleScreen 1.0 ExampleScreen.qml
