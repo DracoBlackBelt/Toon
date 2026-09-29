@@ -4,7 +4,7 @@ Compact guide for OpenCode sessions. This is the canonical agent file.
 
 ## What this is
 
-QML app for the Toon smart thermostat (ToonStore app `apps.buienradar`). Shows Buienradar weather: temperature/wind tile, 2-hour rain tile, sunrise tile, animated radar, station picker, full-text forecast. No build step, no tests, no linter, no CI — do not look for or add them. This directory **does** have its own private `.git` repo (commits are made manually, e.g. before/after releases).
+QML app for the Toon smart thermostat (ToonStore app `apps.buienradar`). Shows Buienradar weather: temperature/wind tile, 2-hour rain tile, sunrise tile, animated radar, station picker, full-text forecast. No build step, no tests, no linter, no CI — do not look for or add them. This directory is part of the `Toon` monorepo (github.com/DracoBlackBelt/Toon); it used to be its own private `.git` repo — that history is preserved (see `git log --graph` from the repo root) but this folder no longer has its own `.git`.
 
 ## Deploy / verify
 

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Workspace of five **independent QML apps for the Toon smart thermostat** (Quby/Eneco): `buienradar/` (weather), `calender/` (ICS calendar, module `apps.calendar`), `exampleapp/` (copy-me scaffold, `apps.example`), `sonos/` (Sonos/Spotify control), `homeassistant/` (Home Assistant sensors/scenes/switches/alarm, module `apps.homeassistant`). Not a git repo (exception: `sonos/`, `buienradar/` and `homeassistant/` each have their own private `.git`). No build step, no tests, no linter, no CI, no package manifests — do not look for or add them.
+Workspace of five **independent QML apps for the Toon smart thermostat** (Quby/Eneco): `buienradar/` (weather), `calender/` (ICS calendar, module `apps.calendar`), `exampleapp/` (copy-me scaffold, `apps.example`), `sonos/` (Sonos/Spotify control), `homeassistant/` (Home Assistant sensors/scenes/switches/alarm, module `apps.homeassistant`). This is the `Toon` monorepo (github.com/DracoBlackBelt/Toon) — a single git repo at this root; the apps were formerly five separate repos (`sonos`, `buienradar`, `homeassistant`, `calender`, `exampleapp` each had their own private `.git`) merged in with full commit history preserved (`git log --graph` from the root shows the merge points; `git tag` still has `upstream-1.0.8` for homeassistant's upstream comparison). The apps remain independent — no shared build, no cross-app imports. No build step, no tests, no linter, no CI, no package manifests — do not look for or add them.
 
 ## Before touching an app
 
