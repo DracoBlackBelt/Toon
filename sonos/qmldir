@@ -1,0 +1,5 @@
+module apps.sonos
+SonosApp 1.0 SonosApp.qml
+MenuScreen 1.0 MenuScreen.qml
+MediaScreen 1.0 MediaScreen.qml
+FavoritesScreen 1.0 FavoritesScreen.qml

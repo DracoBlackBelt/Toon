@@ -1,0 +1,132 @@
+1.4.3
+- Fixed: playing a Spotify recent or search result did nothing (1.4.2 regression: the Spotify URI
+  was percent-encoded into the command path; the http-api only matches raw 'spotify:...' URIs)
+
+1.4.2
+- Fixed: 'previous' button on the tile did nothing (URL was missing the zone)
+- Fixed: volume buttons on the zone overview changed the selected zone instead of the shown zone
+- Fixed: Spotify token refresh failure at boot (e.g. network not up yet) no longer requires a reboot to recover
+- Fixed: 'Verbreek verbinding' now actually removes the stored Spotify tokens (they survived a restart)
+- Security: the Spotify client secret and refresh token are migrated out of the general settings file
+  on first boot; they now live only in sonos.spotifyToken.json together with the client id
+  and access token (spotify-login.sh updated to match)
+- Fixed: line-in button used an invalid API url; now uses the documented /linein command
+- Fixed: zone names in API commands are now always URL-encoded, so rooms with spaces or
+  special characters work on all buttons (media screen, tile, zone overview, favourites)
+- Fixed: a failed Sonos API poll could wipe the selected zone until the next successful one
+- Fixed: tile/media screen could keep showing the previous track when playing line-in or an empty queue
+- Fixed: several errors in the state poller and position slider when the media screen was never opened
+  or when track duration was not (yet) known (NaN slider position, 1-per-second error log spam)
+- Changed: the voetbal-speaker button no longer stores its 'click to select' text as a zone name;
+  scores are only announced when a real zone is configured
+- Changed: 'Check Connection' now shows a dialog on failure instead of silently doing nothing
+- Added: poller watchdogs so one hung request cannot block state/queue updates indefinitely
+- Removed: unused SpotifyMusicSearchScreen and Spotify playlist fetch; various dead code and properties
+
+1.4.1
+- Security: Spotify client secret no longer stored in general settings file, moved to token file
+- Security: Client secret field no longer pre-populated in plaintext on the login screen
+- Fixed: malformed Spotify token responses no longer silently corrupt stored tokens
+
+1.4.0
+- Spotify login via OAuth Authorization Code flow (replaces client credentials)
+- Spotify playlists now loaded directly from your own account after login
+- New login screen: enter credentials, visit auth URL, paste code — done
+- Removed manual Spotify user ID management
+- Fixed: playlist search results were incorrectly showing album data
+- Simplified menu screen Spotify section
+
+1.3.4
+- volume buttons react a bit less 'agressive'
+- added Spotify music search function when spotify account is connected
+- added support for Spotify accounts, play your spotify playlists on Sonos via Toon.
+  Setup accounts via the Sonos menu item and select your Spotify user at the Favourites screen for playback
+
+1.2.10
+- added position indicator (time) of currently playing song on tile and main screen
+
+1.2.9
+- added position slider on the big screen to move position within a track
+
+1.2.8
+- FIX: if the 'title' or 'artist' tag is missing the value from the previous track was still shown on the tile
+
+1.2.7
+- removed shuffle button from tile to make more room for the other buttons
+  shuffle button still available on the main screen
+
+1.2.6
+- added a few more options in the Menu - Sonos configscreen for the voetbal app integration
+
+1.2.4
+- bug fix: the default room to play audio messages was not saved in the user settings file
+- support for the voetbal app added: your Sonos speaker will tell you the real-time game updates (goals) for matches of your favorite teams.
+  added a switch in the configscreen to enable/disable this feature (enabled by default)
+  To use it you also have to install the voetbal app and select your favourite teams there.
+
+1.2.2
+- prevent sending a new audio message before the previous one has completed
+- code cleanup to remove numerous warnings written to logfile
+- dimmableColors update
+
+1.2.1
+- added volume settings for audio messages
+
+1.2.0
+- added option to play text messages on Sonos speakers (Text-To-Speech)
+  accessible via button 'Audiobericht' on the favourites screen
+
+1.1.5
+- fixed bug in savings user settings from the configuration screen via the Toon menu
+
+1.1.4
+- added support for speakergroups (shown as 'Grp zonename'). Volume settings will apply to all speakers in the group
+
+1.1.3
+- selected zone is now saved in the settings file and selected again after a gui-restart
+- settings file is moved to /mnt/data/tsc, the sonos controller ip address needs to be reconfigured once.
+  old settings are not copied.
+
+1.1.2
+- zone selection dropbox replaced with separate zone selection screen to allow more feedback
+- menu screen also redesigned now:
+  When having entered a valid ipadres/poortnr the media screen is shown directly if there is only one Sonos zone,
+  the zone selection screen is shown if more zones exist.
+- bug fix: when a new playlist was selected if was automatically applied to the first zone, not to the active one.
+- various code improvements and gui improvements
+- queue is cleared before switching to a radio station
+- zone selection screen contains control buttons for all zones in one screen
+
+1.1.1
+- allow switch into dim state from the media screen
+
+1.1.0
+- taken over from Harmen who left the developer scene
+- major rewrite of the internals of the app with a smaller footprint
+- merged the functionality of the two tiles into one tile
+- title of the song (from library or radio station) will be shown in dim state on the tile
+- favourites screen now also contains a list of playlists to select (which will populate the queue)
+- screen elements adjusted for the screen resolution of Toon 2
+- various minor improvements, code cleanup ((almost) no warnings anymore in the console log)
+- media screen has now fixed positions for the control buttons (not depending anymore on image size)
+- screen elements are updated directly after selecting a track from the playlist
+- play/pause buttons are only displayed after previous action has been completed
+- tile and media screen are refreshed every 5 seconds during manual operations,
+  switching to every 20 seconds in dim state (to update current tracks on the tile)
+- tile in dim state shows also if music is pause
+- removed tiny thumbnails from the play queue list (saves memory)
+
+
+1.0.3
+- firmware 5 compatibility
+
+1.0.2
+- Fixes:
+sonosIP wordt nu opgehaald voor het weergeven van queue thumbs in de playlist (op het mediascreen)
+itemTime (op het mediascreen) wordt nu netjes uitgelijnt bij radio (onder titel) bij de gewone playlist onder de itemnaam zelf.
+
+1.0.1
+- Fixes:
+edittextlabels werken niet in firmware 3.x, dit probleem is nu gefixt.
+op beide tiles en op het mediascreen is nu de title toegevoegd onder het stationname (dus nu is er en de radiozender, en de titel van het huidige nummer)
+
