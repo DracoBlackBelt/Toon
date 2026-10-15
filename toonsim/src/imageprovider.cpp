@@ -17,6 +17,7 @@ static QString resolve(QString path)
 	const QString local = PathMap::instance().localPath("/" + rel);         // /qmf/qml/apps/..., /mnt/data/...
 	if (!local.isEmpty() && QFileInfo::exists(local)) return local;
 	if (QFileInfo::exists(path)) return path;                               // a Windows path (file:///C:/...)
+	if (QFileInfo::exists("/" + rel)) return "/" + rel;                     // a Linux/macOS path: the id arrives without its leading /
 	return QString();
 }
 
