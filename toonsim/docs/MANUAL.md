@@ -151,6 +151,8 @@ these scripts unchanged, in the BusyBox that comes with the package (`tools\busy
 build of the same BusyBox the Toon runs), with the Toon's paths pointing to the simulator's folders.
 Their output is in `data\var\log\tsc`.
 
+- ReToon's setup app can be tried too: `sh tools/add_retoon.sh`. It installs the app's QML with a stand-in
+  script that only simulates the progress; nothing is written and nothing restarts.
 - The usual tools are there: `sh`, `sed`, `awk`, `grep`, `tr`, `date`, `wget`, `hexdump`, ... and
   `curl` (the one in Windows). `http://localhost/...` in a script reaches the simulator.
 - Toon commands have stand-ins: `bxt` notifications appear in the GUI, `killall qt-gui` and
