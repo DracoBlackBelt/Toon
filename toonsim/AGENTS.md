@@ -8,6 +8,10 @@
 - The in-app updater is switched off here by the `NO-UPDATE` file (it would overwrite this vendored copy). When enabled, it only applies a release that publishes `<asset>.sha256`, and extracts safely.
 - Local changes to upstream files (updater checksum, safe extraction, ToonStore name checks, macOS support in `toonsim.sh`/`build.sh`/`build_compat.py`, Python version check in `pull_firmware.py`) should be sent upstream; re-apply them when refreshing.
 
+## ReToon in the simulator
+
+`sh tools/add_retoon.sh` puts the QML of `../ReToon` in `apps/retoon/` (git-ignored, like any installed app). `retoon.sh` is **not** copied: the real one mounts `/dev/mmcblk3p1`/`p3`, writes boot files and runs `/sbin/reboot`, and must never run on a PC. `tools/retoon-sim.sh` takes its place and only writes the `/tmp/retoon.status` messages (check, 7 install steps, ready), so the tile and setup screen can be tried; `RETOON_SIM_FAIL=1` makes the install end in the error screen. Keep it in step with the status JSON that `ReToon/retoon.sh` writes.
+
 ## macOS (Apple Silicon), Homebrew `qt@5` (Qt 5.15, keg-only)
 
 ```bash
