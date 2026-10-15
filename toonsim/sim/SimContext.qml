@@ -152,6 +152,13 @@ QtObject {
 		function appHeatingOverviewEnabled() { return _f("appHeatingOverviewEnabled"); }
 		function appStatusUsageEnabled() { return _f("appStatusUsageEnabled"); }
 		function appFionaEnabled() { return !!_v("appFionaEnabled", false); }
+		// firmware 6.4.x asks for these too; a missing function aborts Globals' app loading, so no app starts
+		function appGraphsEnabled() { return !!_v("appGraphsEnabled", true); }
+		function appControlPanelEnabled() { return !!_v("appControlPanelEnabled", true); }
+		function appBoilerMonitoringEnabled() { return !!_v("appBoilerMonitoringEnabled", true); }
+		function featMeterModuleSupportEnabled() { return !!_v("featMeterModuleSupportEnabled", true); }
+		function eolMode() { return !!_v("eolMode", false); }
+		function getAppSetting(app, key) { return false; }
 	}
 
 	// (qlanguage, the translations, is src/language.h)
