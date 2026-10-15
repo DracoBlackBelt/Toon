@@ -19,9 +19,9 @@ if [ "$1" = "--update" ]; then
 fi
 
 if [ "$(uname)" = "Darwin" ]; then
-	# macOS: Qt 5.15 from Homebrew (brew install qt@5, then tools/build.sh); no packages to check here
+	# macOS: Qt 5.15 from nix (nix-shell, see shell.nix) or Homebrew (brew install qt@5); then tools/build.sh
 	if [ ! -x "$HOME_DIR/bin/toonsim" ]; then
-		echo "bin/toonsim is not built yet: brew install qt@5, then tools/build.sh (see AGENTS.md, macOS)."
+		echo "bin/toonsim is not built yet: run tools/build.sh (inside nix-shell, or after brew install qt@5; see AGENTS.md, macOS)."
 		exit 1
 	fi
 	PATH="/opt/homebrew/opt/qt@5/bin:/usr/local/opt/qt@5/bin:$PATH"     # build_compat.py needs rcc

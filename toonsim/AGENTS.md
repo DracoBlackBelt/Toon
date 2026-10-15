@@ -8,16 +8,27 @@
 - The in-app updater is switched off here by the `NO-UPDATE` file (it would overwrite this vendored copy). When enabled, it only applies a release that publishes `<asset>.sha256`, and extracts safely.
 - Local changes to upstream files (updater checksum, safe extraction, ToonStore name checks, macOS support in `toonsim.sh`/`build.sh`/`build_compat.py`, Python version check in `pull_firmware.py`) should be sent upstream; re-apply them when refreshing.
 
-## macOS (Apple Silicon), Homebrew `qt@5` (Qt 5.15, keg-only)
+## macOS (Apple Silicon): Qt 5.15 from nixpkgs (preferred) or Homebrew
+
+nixpkgs (`shell.nix` gives qmake, rcc and every QML module, and sets `QML2_IMPORT_PATH` / `QT_PLUGIN_PATH`; run everything inside it, the binary needs them at run time):
+
+```bash
+cd toonsim
+nix-shell --run 'sh tools/build.sh'                                       # -> bin/toonsim
+nix-shell --run 'python3 tools/pull_firmware.py <toon-ip> root <password> --apps --settings'   # once
+nix-shell --run './toonsim.sh --size toon2'                                # or: bin/toonsim --home "$PWD" --size toon2
+```
+
+First start with nix Qt takes 1 to 2 minutes before the home screen shows (nixpkgs disables the QML cache); later starts are faster.
+
+Homebrew (`qt@5` is deprecated and gets disabled on 2027-05-19):
 
 ```bash
 brew install qt@5
-cd toonsim/src && mkdir -p build && cd build
-/opt/homebrew/opt/qt@5/bin/qmake ../toonsim.pro CONFIG+=release CONFIG-=app_bundle CONFIG+=sdk_no_version_check
-make -j8 && cd ../..                       # -> bin/toonsim (without CONFIG-=app_bundle you get toonsim.app)
+sh tools/build.sh            # finds /opt/homebrew/opt/qt@5 when qmake is not on the PATH
 export PATH=/opt/homebrew/opt/qt@5/bin:$PATH   # build_compat.py needs rcc on the PATH
 python3 tools/pull_firmware.py <toon-ip> root <password> --apps --settings   # once; needs Python >= 3.12
 bin/toonsim --home "$PWD" --size toon2
 ```
 
-`tools/build.sh` and `toonsim.sh` also work on macOS now (they find Homebrew's `qt@5`); the commands above are what they do. The control port (127.0.0.1:5555) is unauthenticated by choice.
+The control port (127.0.0.1:5555) is unauthenticated by choice.
