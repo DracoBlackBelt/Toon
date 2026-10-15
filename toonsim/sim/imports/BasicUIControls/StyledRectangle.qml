@@ -17,6 +17,7 @@ Item {
 	property real bottomRightRadiusRatio: 1
 	property color borderColor: "transparent"
 	property real borderWidth: 0
+	property real shadowPixelSize: 0              // the Toon's drop shadow; apps (sonos) set it, nothing is drawn here
 	// Qt.SolidLine/DashLine/DotLine or qt-gui's names "SolidLine", "DashLine", "DotLine"
 	property var borderStyle: Qt.SolidLine
 	readonly property int _borderStyle: (typeof borderStyle === "number") ? borderStyle
