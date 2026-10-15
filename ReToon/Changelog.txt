@@ -1,0 +1,25 @@
+1.0.6
+- "Always start ReToon" is off at first: after installing, ReToon runs until
+  the next restart, which goes back to the original software. Switch it on
+  in the ReToon web interface (Settings, System, Starting up) to keep it.
+- New ReToon image (0.1.0-test5): Restart button on the info screen.
+- README: what ReToon does on the Toon itself and what with Home Assistant.
+1.0.5
+- The thermostat's preset temperatures and week program are taken over
+  from the original software (thermostat.awk).
+- New ReToon image (0.1.0-test4): apps, QR code on the info screen to log in
+  to the web page, the clock is set as soon as WiFi connects.
+1.0.4
+- Fix: WiFi did not connect after the install. The WiFi settings taken over
+  from the original software began with a line ReToon cannot read, so it
+  refused the whole file. Now only the networks and the country are copied.
+1.0.3
+- Fix: the button had to be pressed twice; the screen showed the old state
+  again before the install had started.
+1.0.2
+- Fix: a check started while the install was busy made the install fail
+  ("The third partition cannot be written").
+1.0.1
+- ReToon itself now comes with the app (retoon.tar.gz); nothing is downloaded.
+1.0.0
+- First version: sets up and starts ReToon from the original Toon 2 software.
