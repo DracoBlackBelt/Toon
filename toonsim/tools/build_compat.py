@@ -17,7 +17,8 @@ def find_rcc():
     with, or the system's (Linux: qtbase5-dev-tools' /usr/lib/qt5/bin/rcc)"""
     for c in (os.path.join(HOME, "bin", "rcc.exe"), os.path.join(HOME, "bin", "rcc"),
               os.path.join(os.path.expanduser("~"), "Qt", "5.15.2", "mingw81_64", "bin", "rcc.exe"), "/usr/lib/qt5/bin/rcc",
-              "/usr/lib/x86_64-linux-gnu/qt5/bin/rcc"):
+              "/usr/lib/x86_64-linux-gnu/qt5/bin/rcc",
+              "/opt/homebrew/opt/qt@5/bin/rcc", "/usr/local/opt/qt@5/bin/rcc"):
         if os.path.isfile(c): return c
     return shutil.which("rcc") or shutil.which("rcc-qt5")
 

@@ -5,7 +5,8 @@
 - Change it as little as possible and prefer sending fixes upstream; refresh the folder by re-copying upstream rather than hand-merging.
 - Never commit `firmware/` (Eneco's GUI, pulled from your own Toon), `data*/`, `bin/`, `src/build*/` or installed apps (all git-ignored).
 - Never touch a real Toon from here except the read-only `tools/pull_firmware.py`, and only when asked.
-- Do not use Ctrl+U / `--check-update` / TSC's update button: the updater overwrites files from an upstream release without verifying it.
+- The in-app updater is switched off here by the `NO-UPDATE` file (it would overwrite this vendored copy). When enabled, it only applies a release that publishes `<asset>.sha256`, and extracts safely.
+- Local changes to upstream files (updater checksum, safe extraction, ToonStore name checks, macOS support in `toonsim.sh`/`build.sh`/`build_compat.py`, Python version check in `pull_firmware.py`) should be sent upstream; re-apply them when refreshing.
 
 ## macOS (Apple Silicon), Homebrew `qt@5` (Qt 5.15, keg-only)
 
@@ -19,4 +20,4 @@ python3 tools/pull_firmware.py <toon-ip> root <password> --apps --settings   # o
 bin/toonsim --home "$PWD" --size toon2
 ```
 
-`toonsim.sh` and `tools/build.sh` are Debian-oriented (apt, `nproc`); on macOS call the binary directly as above.
+`tools/build.sh` and `toonsim.sh` also work on macOS now (they find Homebrew's `qt@5`); the commands above are what they do. The control port (127.0.0.1:5555) is unauthenticated by choice.
