@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file.
+Canonical agent guide for this app.
 
 ## What this is
 
-A minimal QML scaffold for the Toon smart thermostat (module `apps.example`) to copy as the starting point for any new Toon app. Shows "test" on a tile; everything else is `// TODO` stubs wired the way the platform expects. No build step, no tests, no linter, no CI, not a git repo — do not look for or add them.
+A minimal QML scaffold for the Toon smart thermostat (module `apps.example`) to copy as the starting point for any new Toon app. Shows "test" on a tile; everything else is `// TODO` stubs wired the way the platform expects. No build step, no tests, no linter, no CI — do not look for or add them.
 
 ## Copy-me checklist
 

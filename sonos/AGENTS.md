@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file.
+Canonical agent guide for this app.
 
 ## What this is
 
-QML app for the Toon smart thermostat (module `apps.sonos`). Controls Sonos speakers through the [node-sonos-http-api](https://github.com/jishi/node-sonos-http-api) middleware (default port 5005), with Spotify playlists via OAuth and text-to-speech messages. No build step, no tests, no linter, no CI. This directory is part of the `Toon` monorepo (github.com/DracoBlackBelt/Toon); it used to be its own private `.git` repo — that history is preserved (see `git log --graph` from the repo root) but this folder no longer has its own `.git`. `git diff`/`git log` from the repo root (scoped with `-- sonos/`) are still useful for review; don't commit unless asked.
+QML app for the Toon smart thermostat (module `apps.sonos`). Controls Sonos speakers through the [node-sonos-http-api](https://github.com/jishi/node-sonos-http-api) middleware (default port 5005), with Spotify playlists via OAuth and text-to-speech messages. No build step, no tests, no linter, no CI. This directory is part of the `Toon` monorepo (github.com/DracoBlackBelt/Toon); it used to be its own private `.git` repo — that history is preserved (see `git log --graph` from the repo root) but this folder no longer has its own `.git`. `git diff`/`git log` from the repo root (scoped with `-- sonos/`) are still useful for review.
 
 ## Deploy / verify
 
