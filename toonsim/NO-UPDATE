@@ -1,0 +1,1 @@
+This copy lives inside another git repository (the Toon monorepo): update it by re-copying from upstream, not with the in-app updater. Delete this file to re-enable the updater.

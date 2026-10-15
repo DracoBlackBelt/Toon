@@ -134,7 +134,14 @@ def remove_entry(path):
         os.remove(path)
 
 
+def valid_app_name(app):
+    return bool(app) and all(c.isalnum() or c in "_." for c in app) and ".." not in app
+
+
 def toonstore_remove(app):
+    if not valid_app_name(app):
+        log("Not removing %r: not an app name" % app)
+        return
     # the device also removes an old opkg installation of the app first: there is no opkg here
     for path in glob.glob(os.path.join(A.apps, glob.escape(app) + "*")):
         try: remove_entry(path)
@@ -151,6 +158,9 @@ def extract(tar_path, dest):
 
 
 def toonstore_install(app, version):
+    if not valid_app_name(app) or not valid_app_name(version):
+        log("Not installing %r %r: not an app name or version" % (app, version))
+        return
     try:
         tags = http_get("https://api.github.com/repos/%s/%s/tags" % (GITHUB, app))
     except Exception as e:
@@ -548,7 +558,7 @@ def handle_toonsim_update():
             except Exception: pass
 
     try:
-        updater.download_file(asset_url, dest, progress_callback=on_progress)
+        updater.download_file(asset_url, dest, progress_callback=on_progress, sha256=info.get("asset_sha256"))
         log("Download complete (%s), starting updater process..." % dest)
         try:
             control("eval updater.setProgress(100, 'Download voltooid! De simulator herstart...')")

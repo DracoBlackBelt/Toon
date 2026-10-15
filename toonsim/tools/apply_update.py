@@ -33,10 +33,14 @@ def extract_archive(archive_path, extract_dir):
     os.makedirs(extract_dir, exist_ok=True)
     if archive_path.endswith(".zip"):
         with zipfile.ZipFile(archive_path, "r") as z:
+            root = os.path.realpath(extract_dir)
+            for n in z.namelist():
+                if not os.path.realpath(os.path.join(root, n)).startswith(root + os.sep):
+                    raise ValueError("unsafe path in the archive: %s" % n)
             z.extractall(extract_dir)
     elif archive_path.endswith((".tar.gz", ".tgz")):
         with tarfile.open(archive_path, "r:gz") as t:
-            t.extractall(extract_dir)
+            t.extractall(extract_dir, filter="data")
     else:
         raise ValueError(f"Unknown archive format: {archive_path}")
 

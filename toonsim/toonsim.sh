@@ -18,7 +18,15 @@ if [ "$1" = "--update" ]; then
 	exec python3 "$HOME_DIR/tools/updater.py" --update
 fi
 
-if command -v dpkg-query >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+if [ "$(uname)" = "Darwin" ]; then
+	# macOS: Qt 5.15 from Homebrew (brew install qt@5, then tools/build.sh); no packages to check here
+	if [ ! -x "$HOME_DIR/bin/toonsim" ]; then
+		echo "bin/toonsim is not built yet: brew install qt@5, then tools/build.sh (see AGENTS.md, macOS)."
+		exit 1
+	fi
+	PATH="/opt/homebrew/opt/qt@5/bin:/usr/local/opt/qt@5/bin:$PATH"     # build_compat.py needs rcc
+	export PATH
+elif command -v dpkg-query >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
 	MISSING=""
 	for p in $(grep -v '^#' "$HOME_DIR/tools/linux-packages.txt"); do
 		dpkg-query -W -f='${Status}' "$p" 2>/dev/null | grep -q "install ok installed" || MISSING="$MISSING $p"

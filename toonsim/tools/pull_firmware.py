@@ -134,6 +134,9 @@ def setup():
 
 
 def main():
+    if sys.version_info < (3, 12):
+        sys.exit("pull_firmware.py needs Python 3.12 or newer (it extracts the Toon's tar stream safely); this is %d.%d."
+                 " On macOS /usr/bin/python3 is too old: use a newer python3 from the PATH." % sys.version_info[:2])
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     flags = [a for a in sys.argv[1:] if a.startswith("--")]
     try:

@@ -1,7 +1,7 @@
 """Toon simulator updater: checks https://github.com/ToonSoftwareCollective/toonsim for releases,
 downloads and applies updates.
 """
-import argparse, json, os, re, shutil, subprocess, sys, time, urllib.request
+import argparse, hashlib, json, os, re, shutil, subprocess, sys, time, urllib.request
 
 REPO = "ToonSoftwareCollective/toonsim"
 HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +33,10 @@ def is_git_repo(home=None):
 def check_for_update(repo=REPO, home=None):
     if not home: home = HOME
     cur_ver = current_version(home)
+    if os.path.exists(os.path.join(home, "NO-UPDATE")):       # a copy kept in another repo: update by re-copying
+        return {"update_available": False, "current_version": cur_ver, "latest_version": cur_ver,
+                "asset_name": "", "asset_url": "", "asset_size": 0, "is_git": False,
+                "release_name": "", "release_notes": "", "published_at": ""}
     url = f"https://api.github.com/repos/{repo}/releases/latest"
     req = urllib.request.Request(url, headers={"User-Agent": f"toonsim-updater/{cur_ver}"})
     try:
@@ -59,7 +63,26 @@ def check_for_update(repo=REPO, home=None):
             matching_asset = a
             break
 
+    # only a release that publishes <asset>.sha256 can be applied: the download is checked against it
+    sha_asset = None
+    if matching_asset:
+        for a in data.get("assets", []):
+            if a.get("name", "") == matching_asset.get("name", "") + ".sha256":
+                sha_asset = a
+    sha256 = ""
+    if sha_asset:
+        try:
+            req = urllib.request.Request(sha_asset.get("browser_download_url", ""), headers={"User-Agent": "toonsim-updater"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                m = re.match(r"\s*([0-9a-fA-F]{64})", r.read().decode("utf-8", "replace"))
+            sha256 = m.group(1).lower() if m else ""
+        except Exception:
+            sha256 = ""
+    if matching_asset and not sha256:
+        matching_asset = None                                   # no checksum: never offered
+
     return {
+        "asset_sha256": sha256,
         "update_available": is_newer and (matching_asset is not None or is_git_repo(home)),
         "current_version": cur_ver,
         "latest_version": latest_ver,
@@ -73,7 +96,7 @@ def check_for_update(repo=REPO, home=None):
     }
 
 
-def download_file(url, target_path, progress_callback=None, timeout=300):
+def download_file(url, target_path, progress_callback=None, timeout=300, sha256=None):
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
     part_path = target_path + ".part"
     if os.path.exists(part_path):
@@ -100,6 +123,13 @@ def download_file(url, target_path, progress_callback=None, timeout=300):
                     if progress_callback:
                         progress_callback(pct, downloaded, total)
 
+    if sha256:
+        h = hashlib.sha256()
+        with open(part_path, "rb") as f:
+            for block in iter(lambda: f.read(1 << 20), b""): h.update(block)
+        if h.hexdigest() != sha256.lower():
+            os.remove(part_path)
+            raise ValueError("the download does not match its sha256 checksum")
     if os.path.exists(target_path):
         try: os.remove(target_path)
         except OSError: pass
@@ -151,7 +181,7 @@ def main():
         print(f"Downloading {info['asset_url']} to {dest}...")
         def on_prog(pct, cur, tot):
             print(f"\rDownloading: {pct}% ({cur/(1024*1024):.1f}/{tot/(1024*1024):.1f} MB)", end="", flush=True)
-        download_file(info["asset_url"], dest, progress_callback=on_prog)
+        download_file(info["asset_url"], dest, progress_callback=on_prog, sha256=info.get("asset_sha256"))
         print("\nDownload complete!")
         if args.update:
             print("Applying update...")
