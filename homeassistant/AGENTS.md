@@ -1,10 +1,10 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file.
+Canonical agent guide for this app.
 
 ## What this is
 
-QML app for the Toon smart thermostat (module `apps.homeassistant`). Shows Home Assistant sensors on the tile and controls scenes / switches / an alarm control panel through the HA REST API with a long-lived access token. Rewritten fork of ToonSoftwareCollective/homeassistant (git tag `upstream-1.0.8` = original code, still present at the repo root; its tree is unprefixed, so diff against it with `git diff upstream-1.0.8 HEAD:homeassistant` from the repo root, not a plain pathspec diff). No build step, no tests, no linter, no CI. This directory is part of the `Toon` monorepo (github.com/DracoBlackBelt/Toon); it used to be its own private `.git` repo — that history is preserved (see `git log --graph` from the repo root) but this folder no longer has its own `.git`. Don't commit unless asked.
+QML app for the Toon smart thermostat (module `apps.homeassistant`). Shows Home Assistant sensors on the tile and controls scenes / switches / an alarm control panel through the HA REST API with a long-lived access token. Rewritten fork of ToonSoftwareCollective/homeassistant (git tag `upstream-1.0.8` = original code, still present at the repo root; its tree is unprefixed, so diff against it with `git diff upstream-1.0.8 HEAD:homeassistant` from the repo root, not a plain pathspec diff). No build step, no tests, no linter, no CI. This directory is part of the `Toon` monorepo (github.com/DracoBlackBelt/Toon); it used to be its own private `.git` repo — that history is preserved (see `git log --graph` from the repo root) but this folder no longer has its own `.git`.
 
 ## Deploy / verify
 

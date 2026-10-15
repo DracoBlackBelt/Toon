@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file.
+Canonical agent guide for this app.
 
 ## What this is
 

@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Compact guide for OpenCode sessions. This is the canonical agent file.
+Canonical agent guide for this app.
 
 ## What this is
 
@@ -36,7 +36,7 @@ ssh -oHostKeyAlgorithms=+ssh-rsa root@<toon-ip> killall qt-gui
 
 - The app also writes the current temperature to `/var/volatile/tmp/actualBuienradarTemp.txt` for the external TemperatureLogger app — don't remove or rename that side effect.
 - Radar image URLs must use `width=`/`height=`; the backend (which the old endpoint 301-redirects to) silently ignores `w=`/`h=` and serves the full-size animation (fixed across all files in 9.0.12).
-- UI strings are now wrapped in `qsTr()` (9.0.12), but `lang/*.qm` cannot be recompiled locally — strings added/changed after the last ToonStore packaging show untranslated (Dutch source) until the catalogs are rebuilt.
+- UI strings are now wrapped in `qsTr()` (9.0.12), and `lang/*.qm` can be rebuilt on the PC with Qt6 `lrelease lang/*.ts` (run `lupdate` first if `qsTr()` strings changed) — re-run it in the same commit whenever a `qsTr()` string is added, changed or removed, or the stale `.qm` shows untranslated (Dutch source) text.
 - `EditTextLabel4421.qml` is a shared input-widget copy (also in calender/sonos); changes may need mirroring, not deduping.
 
 ## Releases
