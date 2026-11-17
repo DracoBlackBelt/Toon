@@ -1,3 +1,8 @@
+1.2.1-jh2
+- removed the Yuvomi planner feed from the default calendar list: a private feed URL does not belong in a public
+  repo (that token is revoked). Add private feeds on the device via the settings screen; they live in
+  /mnt/data/tsc/calendar.userSettings.json only
+
 1.2.1-jh1
 - fork release on top of upstream 1.2.1, with these changes from the 1.1.17 fork:
 - added the Yuvomi planner ICS feed to the default calendar list (only affects devices without a settings file)
