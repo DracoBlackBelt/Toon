@@ -1,3 +1,15 @@
+1.3.5-jh1
+- Based on this fork's 1.4.3 with the upstream 1.3.5 bugfixes merged in (upstream's multi-user Spotify
+  screens are not used; the inline Spotify search / recents / login flow stays)
+- Ported from upstream 1.3.5: clear queue and load/play are now sent one after the other instead of
+  at the same time (favourites and Spotify search results / recents), so the queue can no longer be cleared after loading
+- Ported from upstream 1.3.5: the media screen shows 'Geen verbinding met de Sonos HTTP API' when the API is unreachable
+- Ported from upstream 1.3.5: the queue on the media screen is only rebuilt when it changed, refreshes on
+  track/zone change and otherwise every 30 s instead of every 5 s (least load on Toon 1)
+- Already fixed in 1.4.x (same fixes as upstream 1.3.5): zone overview volume buttons and tile 'previous' button,
+  zone refresh with no zones, voetbal placeholder saved as zone, Spotify token refresh only when configured,
+  Check Connection failure messages
+
 1.4.3
 - Fixed: playing a Spotify recent or search result did nothing (1.4.2 regression: the Spotify URI
   was percent-encoded into the command path; the http-api only matches raw 'spotify:...' URIs)

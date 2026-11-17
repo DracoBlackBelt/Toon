@@ -52,4 +52,4 @@ ssh -oHostKeyAlgorithms=+ssh-rsa root@<toon-ip> killall qt-gui
 
 ## Releases
 
-Bump `version.txt` (currently `1.4.3`) and prepend a brief block to `Changelog.txt` together when changing behavior. Spotify/auth/HTTP-layer changes go through the security checklist in `.claude/agents/spotify-security-reviewer.md` before release.
+Bump `version.txt` (currently `1.3.5-jh1`) and prepend a brief block to `Changelog.txt` together when changing behavior. Spotify/auth/HTTP-layer changes go through the security checklist in `.claude/agents/spotify-security-reviewer.md` before release.
