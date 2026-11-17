@@ -1,4 +1,6 @@
 2.1.0
+ - Supersedes ToonStore's homeassistant 1.0.8 (unchanged upstream since 2024). Deploy by hand (see AGENTS.md):
+   updating this app through the ToonStore replaces this build with 1.0.8.
  - Audit release. Fixed: main screen overlap - the alarm dialpad (right-aligned to its title, 170 px wide)
    sat on top of the switch column, and the dialpad ran off the bottom of the screen. The screen is now
    three anchored columns (scenes+slider | switches | alarm) whose sizes are derived from the real screen
