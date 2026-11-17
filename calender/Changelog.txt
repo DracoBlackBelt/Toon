@@ -1,3 +1,11 @@
+1.2.1-jh1
+- fork release on top of upstream 1.2.1, with these changes from the 1.1.17 fork:
+- added the Yuvomi planner ICS feed to the default calendar list (only affects devices without a settings file)
+- settings file is validated on load (non-object files are ignored) and the refresh interval is clamped to 10-99 minutes
+- settings screen: configured calendars remain visible when the public calendars index cannot be fetched,
+  calendar colors no longer break when zero calendars are configured
+- settings screen: numeric keyboard for the refresh interval is attached to the right input, typo 'Beschikbare' fixed
+
 1.2.1
 - the calendar files are now parsed in a separate thread (WorkerScript), the Toon no longer
   freezes for a few seconds while the calendars are processed. Falls back to processing in the
