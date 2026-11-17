@@ -19,7 +19,7 @@ scp -O -oHostKeyAlgorithms=+ssh-rsa *.qml *.js qmldir root@<toon-ip>:/qmf/qml/ap
 - The `calendarSettingsJson` defaults in `CalendarApp.qml` only take effect on a device that has no valid `/mnt/data/tsc/calendar.userSettings.json`. Editing default `Calendar_URL` entries does NOT reach already-configured devices — change the device file instead.
 - The settings screen can only add/remove calendars from the public index (`https://raw.githubusercontent.com/ToonSoftwareCollective/calendar_public_calendars/main/public_calendars.json`, shape `{ public_calendars: [ { friendlyName, link } ] }`); there is no free-form URL input. Arbitrary URLs must be edited into the device JSON directly.
 - Settings keys in `/mnt/data/tsc/calendar.userSettings.json`: `ShowNotifications`, `ShowColors`, `ShowAnimation`, `DimTileExtended`, `RefreshIntervalInMinutes`, `Calendar_URL` (array of ICS URLs).
-- Base is upstream ToonSoftwareCollective/calendar 1.2.1 (rewrite) plus a few fork edits (version `1.2.1-jh1`). The old 1.1.x fork fixes for BYDAY freeze, VALARM and missing SUMMARY are superseded by the new parser in `calendarWorker.js`; do not reintroduce them.
+- Base is upstream ToonSoftwareCollective/calendar 1.2.1 (rewrite) plus a few fork edits (version `1.2.1-jh2`). The old 1.1.x fork fixes for BYDAY freeze, VALARM and missing SUMMARY are superseded by the new parser in `calendarWorker.js`; do not reintroduce them.
 
 ## Non-obvious code facts
 

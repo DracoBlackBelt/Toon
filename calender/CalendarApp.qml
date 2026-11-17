@@ -59,8 +59,7 @@ App {
 		'ShowColors': "Yes",
 		'DimTileExtended': "No",
 		'RefreshIntervalInMinutes': 60,
-		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics",
-		                 "https://planner.huisman.dev/feed/calendar/chaUmc_5TKGcuxvwyRRMc6k3WmFJ4ef-Cfzmz5hyv88.ics"]
+		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics"]
 	}
 
 	// state of the current refresh cycle
