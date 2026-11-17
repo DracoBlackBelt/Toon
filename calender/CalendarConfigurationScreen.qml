@@ -21,7 +21,7 @@ Screen {
 
 	function getPublicCalendars(){
 
-		//get list of public calendars (the configured calendars are always shown, even when this fetch fails)
+		// get list of public calendars (the configured calendars are always shown, even when this fetch fails)
 
 		var http = new XMLHttpRequest();
 		http.onreadystatechange=function() {
@@ -29,16 +29,16 @@ Screen {
 				if (http.status === 200) {
 					var tmpArray = [];
 					try {
-						var availableCalendars = JSON.parse(http.responseText);
-						if ((availableCalendars !== null) && (typeof availableCalendars === "object") && (availableCalendars.public_calendars instanceof Array)) {
-							tmpArray = availableCalendars.public_calendars;
+						var availableCalendarsJson = JSON.parse(http.responseText);
+						if ((availableCalendarsJson !== null) && (typeof availableCalendarsJson === "object") && (availableCalendarsJson.public_calendars instanceof Array)) {
+							tmpArray = availableCalendarsJson.public_calendars;
 						}
 					} catch(e) {
-						tmpArray = [];		// bad json from the index: show configured calendars only
+						tmpArray = [];		// bad json from the index: show the configured calendars only
 					}
 					fillUrlModel(tmpArray);
 				} else {
-					fillUrlModel(null);		// offline or error: still show the configured calendars instead of a stale/empty list
+					fillUrlModel(null);		// offline or error: still show the configured calendars
 				}
 			}
 		}
@@ -48,32 +48,28 @@ Screen {
 
 	function fillUrlModel(publicCalendars) {
 
-		// (re)build the list model: configured calendars first, then the public ones not yet added, colors continue per index
+		// configured calendars first, then the public ones not yet added; colors continue per index
 
 		urlModel.clear();
 
 		var urls = app.calendarSettingsJson['Calendar_URL'];
-		if (!(urls instanceof Array)) {
-			urls = [];
-		}
+		if (!(urls instanceof Array)) urls = [];
 		var nextColor = urls.length;
 
 		for (var i = 0; i < urls.length; i++) {
-			var friendlyName  = "-";
+			var friendlyName = "-";
 			if (publicCalendars) {
 				for (var k = 0; k < publicCalendars.length; k++) {
-					if (publicCalendars[k].link == urls[i]) {
-						friendlyName = publicCalendars[k].friendlyName;
-					}
+					if (publicCalendars[k].link == urls[i]) friendlyName = publicCalendars[k].friendlyName;
 				}
 			}
-			urlModel.append({urlName: urls[i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStrForIndex(i)), urlAlreadyAdded: true});
+			urlModel.append({urlName: urls[i], urlFriendlyName: friendlyName, urlColor: app.colorCodes(colorStrForIndex(i)), urlExisting: 0});
 		}
 
 		if (publicCalendars) {
 			for (var p = 0; p < publicCalendars.length; p++) {
 				if (urls.indexOf(publicCalendars[p].link) < 0) {
-					urlModel.append({urlName: publicCalendars[p].link, urlFriendlyName: publicCalendars[p].friendlyName, urlColor: app.colorCodes(colorStrForIndex(nextColor)), urlAlreadyAdded: false});
+					urlModel.append({urlName: publicCalendars[p].link, urlFriendlyName: publicCalendars[p].friendlyName, urlColor: app.colorCodes(colorStrForIndex(nextColor)), urlExisting: -1});
 					nextColor = nextColor + 1;
 				}
 			}
@@ -81,11 +77,7 @@ Screen {
 	}
 
 	function colorStrForIndex(index) {		// calendars beyond the tenth share the last color
-
-		if (index > 9) {
-			return "9";
-		}
-		return index.toString();
+		return (index > 9) ? "9" : index.toString();
 	}
 
 	onCustomButtonClicked: {

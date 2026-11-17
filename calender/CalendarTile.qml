@@ -3,7 +3,7 @@ import qb.components 1.0
 
 
 Tile {
-	id: calendarTile
+	id: wastecollectionTile
 
 	property bool dimState: screenStateController.dimmedColors
 	property int maxlength: isNxt ? 25 : 24

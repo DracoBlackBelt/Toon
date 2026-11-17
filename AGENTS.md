@@ -15,7 +15,7 @@ scp -O -r -oHostKeyAlgorithms=+ssh-rsa *.qml *.js qmldir drawables root@<toon-ip
 ssh -oHostKeyAlgorithms=+ssh-rsa root@<toon-ip> killall qt-gui
 ```
 
-`-O` (legacy SCP — no sftp-server on device) and `+ssh-rsa` (old host key) are both required. `<app-dir>` differs per app: `calendar-<version>` (versioned, e.g. `calendar-1.1.17` from `version.txt`), `buienradar` (**unversioned — mandatory**, its QML loads icons from the absolute path `file:///qmf/qml/apps/buienradar/drawables/...`), `sonos/` (anything; icons use relative paths), `homeassistant` (anything — use unversioned; icons use relative `drawables/...`). Verification is careful code reading; pure JS helpers (e.g. `buienradar.js`, `calendar.js`) can be brace-extracted and sanity-checked with `node`.
+`-O` (legacy SCP — no sftp-server on device) and `+ssh-rsa` (old host key) are both required. `<app-dir>` differs per app: `calendar-<version>` (versioned, e.g. `calendar-1.2.1-jh1` from `version.txt`), `buienradar` (**unversioned — mandatory**, its QML loads icons from the absolute path `file:///qmf/qml/apps/buienradar/drawables/...`), `sonos/` (anything; icons use relative paths), `homeassistant` (anything — use unversioned; icons use relative `drawables/...`). Verification is careful code reading; pure JS helpers (e.g. `buienradar.js`, `calendar.js`) can be brace-extracted and sanity-checked with `node`.
 
 Qt 6.11 is installed on this machine (Homebrew): `qmllint`/`qmlformat` (parse-check any QML — the device-only modules `qb.*`, `FileIO`, `BasicUIControls` always warn, so look only at actual *Error*s), and `lupdate`/`lrelease` for `lang/*.ts` → `lang/*.qm` (keep `.qm` in sync with `qsTr()` sources). QML still cannot be *run* locally — the Toon runtime is not available.
 

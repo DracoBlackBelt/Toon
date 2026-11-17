@@ -5,38 +5,37 @@ Screen {
 	id: calendarListDatesScreen
 	screenTitle: "Kalender"
 
+	property int itemsPerPage: 16
+	property int currentPage: 0
+
 	onShown: {
 		addCustomTopRightButton("Instellingen");
+		navigatePage(0);		// populate gridview first page
+	}
 
-			// populate gridview first page
+		// refresh the list when new calendar data arrives while the screen is open
 
-			navigatePage(0);
+	Connections {
+		target: app
+		onCalendarEventsChanged: if (calendarListDatesScreen.visible) navigatePage(currentPage)
+		onStatusTextChanged: if (calendarListDatesScreen.visible) statusLabel.text = app.statusText
 	}
 
 	function navigatePage(page) {
 
-		var startItem = page * 16;
-		calendarModel.clear();
-		var tmp = app.calendarDatesString.split("\n");
-		var tmpAppointmentTime = "";
-		var validCount = 0;
-		var filled = 0;
-		for (var i = 0; i < tmp.length; i++) {
-			if (tmp[i].length > 20) {
-				if (validCount >= startItem && filled < 16) {
-					if ((tmp[i].slice(11, 16) == "00:00") && (tmp[i].slice(30, 35) == "23:59")) { //all day event
-						tmpAppointmentTime = " ";
-					} else {
-						tmpAppointmentTime = tmp[i].slice(11, 16) + " - " + tmp[i].slice(30, 35);
-					}
-					calendarModel.append({appointmentDate: tmp[i].slice(0, 10), appointmentTitle: tmp[i].slice(57), appointmentColor: app.colorCodes(tmp[i].slice(56,57)), appointmentTime: tmpAppointmentTime});
-					filled++;
-				}
-				validCount++;
-			}
-		}
-		widgetNavBar.pageCount = Math.ceil(validCount / 16);
+		var events = app.upcomingEvents();
+		var pageCount = Math.max(1, Math.ceil(events.length / itemsPerPage));
+		if (page >= pageCount) page = pageCount - 1;
+		if (page < 0) page = 0;
+		currentPage = page;
 
+		calendarModel.clear();
+		for (var i = page * itemsPerPage; i < events.length && i < (page + 1) * itemsPerPage; i++) {
+			var ev = events[i];
+			calendarModel.append({appointmentDate: ev.date, appointmentTitle: ev.flag + ev.title, appointmentColor: app.colorForEvent(ev), appointmentTime: app.timeText(ev)});
+		}
+		widgetNavBar.pageCount = pageCount;
+		statusLabel.text = app.statusText;
 	}
 
 	onCustomButtonClicked: {
@@ -46,7 +45,6 @@ Screen {
 	}
 
 	hasBackButton : true
-
 
 	Rectangle {
 		id: gridBack
@@ -81,6 +79,22 @@ Screen {
 		id: calendarModel
 	}
 
+		// message while loading or when there are no appointments
+
+	Text {
+		id: statusLabel
+		anchors {
+			top: gridBack.top
+			topMargin: isNxt ? 30 : 24
+			horizontalCenter: gridBack.horizontalCenter
+		}
+		font {
+			family: qfont.regular.name
+			pixelSize: isNxt ? 22 : 18
+		}
+		visible: text.length > 0
+	}
+
 	StandardButton {
 		id: btnRefreshCalendars
 		width: isNxt ? 125 : 100
@@ -91,7 +105,6 @@ Screen {
 		leftClickMargin: 3
 		bottomClickMargin: 5
 		onClicked: {
-			hide();
 			app.startOrRefresh();
 		}
 	}
@@ -105,7 +118,6 @@ Screen {
 		}
 		maxPageCount: 14
 		pageCount: 1
-//		shadowBarButtons: true
 		onNavigate: navigatePage(page)
 	}
 
