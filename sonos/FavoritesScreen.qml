@@ -40,6 +40,15 @@ Screen {
 		});
 	}
 
+	// Clear the queue and only AFTER that has completed (success or not) send the load/play command.
+	// Sent concurrently the two could arrive out of order and the queue was cleared after loading.
+	function favClearThen(request) {
+		pageThrobber.visible = true;
+		app.apiGet(app.sonosUrl("clearqueue"), null, null, function() {
+			favGet(request);
+		});
+	}
+
 	//if the connection is not available or is still loading a page throbber will be visible in the scrollable list.
 	Throbber {
 		id: pageThrobber
@@ -172,8 +181,7 @@ Screen {
 
 				onClicked: {
 					tempId = app.favourites[item]["name"];
-					favGet(app.sonosUrl("clearqueue"));
-					favGet(app.sonosUrl("favorite/" + encodeURIComponent(tempId)));
+					favClearThen(app.sonosUrl("favorite/" + encodeURIComponent(tempId)));
 					hide();
 				}
 			}
@@ -277,10 +285,9 @@ Screen {
 				width: isNxt ? 350 : 280
 				anchors.top: parent.top
 				onClicked: {
-					favGet(app.sonosUrl("clearqueue"));
 					// the Spotify URI must go into the path RAW: the http-api matches /spotify/now/... 
 					// against the un-decoded path, so %3A-encoded colons break playback
-					favGet(app.sonosUrl("spotify/now/" + rightPanelItems[item]['uri']));
+					favClearThen(app.sonosUrl("spotify/now/" + rightPanelItems[item]['uri']));
 					app.addToRecentlyPlayed(rightPanelItems[item]['name'], rightPanelItems[item]['uri']);
 					hide();
 				}
