@@ -51,6 +51,8 @@ App {
 	property string actualArtist
 	property string actualTitle
 	property string nowPlayingImage
+	property bool connectionOk : true           // false when the last state poll of the Sonos HTTP API failed
+	property string currentTrackUri : ""        // uri of the playing track, lets the media screen refresh its queue on track changes
 	property bool playButtonVisible : true
 	property bool pauseButtonVisible : false
 	property bool shuffleButtonVisible : true
@@ -541,16 +543,18 @@ App {
 		stateWatchdog.restart();
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.timeout = 4000;
-		xmlhttp.onerror = function() { p.stateInFlight = false; stateWatchdog.stop(); console.log("sonos: readSonosState network error"); }
-		xmlhttp.ontimeout = function() { p.stateInFlight = false; stateWatchdog.stop(); console.log("sonos: readSonosState timeout"); }
+		xmlhttp.onerror = function() { p.stateInFlight = false; stateWatchdog.stop(); connectionOk = false; console.log("sonos: readSonosState network error"); }
+		xmlhttp.ontimeout = function() { p.stateInFlight = false; stateWatchdog.stop(); connectionOk = false; console.log("sonos: readSonosState timeout"); }
 		xmlhttp.onreadystatechange=function() {
 			if (xmlhttp.readyState == 4) {
 				p.stateInFlight = false;
 				stateWatchdog.stop();
+				connectionOk = (xmlhttp.status == 200);
 				if (xmlhttp.status == 200) {
 					try {
 						var response = JSON.parse(xmlhttp.responseText);
 						var currentTrack = response['currentTrack'] || {};
+						currentTrackUri = currentTrack['uri'] ? String(currentTrack['uri']) : "";
 						if (currentTrack['type'] == "track"){
 							showSlider = true;
 							actualArtist = "";

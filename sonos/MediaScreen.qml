@@ -14,6 +14,7 @@ Screen {
 	property bool positionIndicatorDragActive : false
 	property int positionIndicatorX
 	property bool queueInFlight : false
+	property string lastQueueResponse : ""    // raw queue response; the list is only rebuilt when it changed
 	
 	onCustomButtonClicked: {
 		if (app.favoritesScreen) {
@@ -24,6 +25,7 @@ Screen {
 	onHidden: {
 		queueTimer.stop();
 		queueWatchdog.stop();
+		lastQueueResponse = "";   // force a rebuild the next time the screen is shown
 	}
 
 	onShown: {
@@ -297,6 +299,20 @@ Screen {
 	}
 	
 	
+	// shown when the last poll of the Sonos HTTP API failed
+	Text {
+		id: noConnectionText
+		visible: !app.connectionOk
+		anchors {
+			horizontalCenter: boilerScrollableSimpleList.horizontalCenter
+			verticalCenter: boilerScrollableSimpleList.verticalCenter
+		}
+		color: colors.foreground
+		font.family: qfont.italic.name
+		font.pixelSize: isNxt ? 20 : 16
+		text: qsTr("Geen verbinding met de Sonos HTTP API")
+	}
+
 	//Below is the volume control part, first you find the volume up button
 	IconButton {
 		id: volumeUp
@@ -465,6 +481,9 @@ Screen {
 				queueWatchdog.stop();
 				if (xmlhttp.status == 200) {
 					try {
+						// unchanged queue: skip the (expensive) list rebuild, most noticeable on Toon 1
+						if (xmlhttp.responseText === lastQueueResponse) { return; }
+						lastQueueResponse = xmlhttp.responseText;
 						var response = JSON.parse(xmlhttp.responseText);
 						boilerScrollableSimpleList.removeAll();
 						if (response.length > 0) {
@@ -489,9 +508,17 @@ Screen {
 		xmlhttp.send();
 	}
 	
+	// refresh the queue when the playing track or the selected zone changes (only while this screen is shown)
+	Connections {
+		target: app
+		onCurrentTrackUriChanged: if (queueTimer.running) updateQueue()
+		onSonosNameChanged: if (queueTimer.running) { lastQueueResponse = ""; updateQueue(); }
+	}
+
+	// safety net for queue changes made by other controllers; the response comparison keeps it cheap
 	Timer {
 		id: queueTimer
-		interval: 5000
+		interval: 30000
 		triggeredOnStart: true
 		running: false
 		repeat: true
