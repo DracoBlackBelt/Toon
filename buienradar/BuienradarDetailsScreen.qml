@@ -5,7 +5,7 @@ import "buienradar.js" as BuienradarJS
 Screen {
 	id: buienradarDetailsScreen
 
-	screenTitle: "Actueel weer plus weersverwachting";
+	screenTitle: qsTr("Actueel weer plus weersverwachting");
 
 	property bool dimState: screenStateController.dimmedColors;
 
@@ -16,7 +16,9 @@ Screen {
 	}
 
 	onShown: {
-		addCustomTopRightButton("Locatie");
+		addCustomTopRightButton(qsTr("Locatie"));
+		app.radarimagesSmallurl = "http://toon/";  //resetimage
+		app.radarimagesSmallurl = "https://api.buienradar.nl/image/1.0/RadarMapNL?width=180&height=180";
 		fivedayforecastModel.clear();
 		for (var i = 0; i < app.fivedayforecast.length; i++) {
 			fivedayforecastModel.append(app.fivedayforecast[i]);
@@ -97,8 +99,8 @@ Screen {
 		id: actualDelegateGrid
 
 		Item {
-			width: grid.width / grid.columns
-		        height: grid.height
+			width: grid.cellWidth
+			height: grid.cellHeight
 			Rectangle {
 				anchors.fill: parent
 
@@ -251,8 +253,8 @@ Screen {
 		id: delegateGrid
 
 		Item {
-			width: grid.width / grid.columns
-		        height: grid.height
+			width: grid2.cellWidth
+			height: grid2.cellHeight
 			Rectangle {
 				anchors.fill: parent
 

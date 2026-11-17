@@ -1,11 +1,9 @@
 import QtQuick 2.1
 import qb.components 1.0
 import BasicUIControls 1.0;
-import "buienradar.js" as BuienradarJS
 
 Tile {
 	id: root
-	property string displayScale: BuienradarJS.formatScale(app.regenMaxValue, app.yaxisScale)
 
 	onClicked: {
 		app.radarimagesurl ="http://toon/";  //resetimage
@@ -33,7 +31,7 @@ Tile {
 			pixelSize: isNxt ? 20 : 16
 		}
 		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.tileTextColor : colors.tileTextColor
-		text: "Regenverwachting"
+		text: qsTr("Regenverwachting")
 		visible: app.showRain
 	}
 
@@ -49,7 +47,7 @@ Tile {
 			pixelSize: isNxt ? 20 : 16
 		}
 		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.tileTextColor : colors.tileTextColor
-		text: "Geen neerslag verwacht"
+		text: qsTr("Geen neerslag verwacht")
 		visible: !app.showRain
 	}
 
@@ -70,7 +68,7 @@ Tile {
 			width: parent.width
 			height: parent.height
 			color: (typeof dimmableColors !== 'undefined') ? dimmableColors.tileTextColor : colors.graphTileRect
-			yScale: app.yaxisScale ? (height / app.yaxisScale) : (height / app.regenMaxValue)
+			yScale: app.regenMaxValue > 0 ? (height / app.regenMaxValue) : height
 			showNaN: false
 			values: app.regenVerwachting
 		}
@@ -91,7 +89,7 @@ Tile {
 			pixelSize: isNxt ? 30 : 24
 		}
 		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.tileTextColor : colors.tileTextColor
-		text: app.yaxisScale ? app.yaxisScale : app.regenMaxValue
+		text: app.regenMaxValue
 		visible: app.showRain
 	}
 

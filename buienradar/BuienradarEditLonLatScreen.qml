@@ -3,12 +3,9 @@ import qb.components 1.0
 import BasicUIControls 1.0
 
 import BxtClient 1.0
-import "buienradar.js" as BuienradarJS
 
 Screen {
 	id: lonlatEntryScreen
-
-	property string qrCodeID
 
 	function saveLon(text) {
 		//rounding at 2 decimals
@@ -36,17 +33,13 @@ Screen {
 	hasCancelButton: true
 	hasSaveButton: false
 
-	screenTitle: "Buienradar settings"
+	screenTitle: qsTr("Buienradar settings")
 
 	onShown: {
-		addCustomTopRightButton("Opslaan");
+		addCustomTopRightButton(qsTr("Opslaan"));
 		if (app.indexStation > -1) stationLabel.inputText = app.stationArray[app.indexStation]; 
 		lonLabel.inputText = app.lon;
 		latLabel.inputText = app.lat;
-		dimSunDownLabel.inputText = app.autoDimlevelSunDown;
-		dimSunUpLabel.inputText = app.autoDimlevelSunUp;
-		yaxisLabel.inputText = app.yaxisScale;
-		autoDimToggle.isSwitchedOn = app.autoAdjustDimBrightness ;
 	}
 	
 	function toRad(x) {
@@ -83,7 +76,7 @@ Screen {
 		app.saveSettings();
 		app.updateBuienradar();
 		stationLabel.inputText = app.stationArray[app.indexStation]; 
-		qdialog.showDialog(qdialog.SizeLarge, "Buienradar mededeling", "Op basis van de ingevoerde lat/lon coordinaten is het volgende dichtsbijzijnde weerstation geselekteerd:\n\nStation: " + app.stationArray[app.indexStation] + "\nAfstand : " + (Math.round(nearestDistance * 100) / 100) + " km", "Sluiten");
+		qdialog.showDialog(qdialog.SizeLarge, qsTr("Buienradar mededeling"), qsTr("Op basis van de ingevoerde lat/lon coordinaten is het volgende dichtsbijzijnde weerstation geselekteerd:\n\nStation: ") + app.stationArray[app.indexStation] + qsTr("\nAfstand : ") + (Math.round(nearestDistance * 100) / 100) + qsTr(" km"), qsTr("Sluiten"));
 	}
 
 	onCustomButtonClicked: {
@@ -94,7 +87,7 @@ Screen {
 
 	Text {
 		id: title
-		text: "Invoeren GPS coordinaten (2 decimalen) voor de exacte regenverwachting en automatische selektie van het dichtsbijzijnde weerstation."
+		text: qsTr("Invoeren GPS coordinaten (2 decimalen) voor de exacte regenverwachting en automatische selektie van het dichtsbijzijnde weerstation.")
        		width: isNxt ? 500 : 400
         	wrapMode: Text.WordWrap
 		font.pixelSize: isNxt ? 20 : 16
@@ -113,7 +106,7 @@ Screen {
 		id: lonLabel
 		width: isNxt ? 350 : 280
 		height: isNxt ? 45 : 35
-		leftText: "Lengtegraad:"
+		leftText: qsTr("Lengtegraad:")
 		leftTextAvailableWidth: isNxt ?  175 : 140
 
 		anchors {
@@ -124,7 +117,7 @@ Screen {
 		}
 
 		onClicked: {
-			qnumKeyboard.open("Lengtegraad", lonLabel.inputText, app.lon, 1 , saveLon, validateCoordinate);
+			qnumKeyboard.open(qsTr("Lengtegraad"), lonLabel.inputText, app.lon, 1 , saveLon, validateCoordinate);
 		}
 	}
 
@@ -142,7 +135,7 @@ Screen {
 
 		bottomClickMargin: 3
 		onClicked: {
-			qnumKeyboard.open("Lengtegraad", lonLabel.inputText, app.lon, 1 , saveLon, validateCoordinate);
+			qnumKeyboard.open(qsTr("Lengtegraad"), lonLabel.inputText, app.lon, 1 , saveLon, validateCoordinate);
 		}
 	}
 
@@ -150,7 +143,7 @@ Screen {
 		id: latLabel
 		width: lonLabel.width
 		height: isNxt ? 45 : 35
-		leftText: "Breedtegraad:"
+		leftText: qsTr("Breedtegraad:")
 		leftTextAvailableWidth: isNxt ?  175 : 140
 
 		anchors {
@@ -160,7 +153,7 @@ Screen {
 		}
 
 		onClicked: {
-			qnumKeyboard.open("Breedtegraad", latLabel.inputText, app.lat, 1 , saveLat, validateCoordinate);
+			qnumKeyboard.open(qsTr("Breedtegraad"), latLabel.inputText, app.lat, 1 , saveLat, validateCoordinate);
 		}
 	}
 
@@ -178,7 +171,7 @@ Screen {
 
 		topClickMargin: 3
 		onClicked: {
-			qnumKeyboard.open("Breedtegraad", latLabel.inputText, app.lat, 1 , saveLat, validateCoordinate);
+			qnumKeyboard.open(qsTr("Breedtegraad"), latLabel.inputText, app.lat, 1 , saveLat, validateCoordinate);
 		}
 	}
 
@@ -186,7 +179,7 @@ Screen {
 		id: stationLabel
 		width: lonLabel.width
 		height: isNxt ? 45 : 35
-		leftText: "Weerstation:"
+		leftText: qsTr("Weerstation:")
 		leftTextAvailableWidth: isNxt ?  175 : 140
 
 		anchors {
@@ -226,7 +219,7 @@ Screen {
 
 	Text {
 		id: uitlegStation
-		text: "Eventuele handmatige selektie weerstation."
+		text: qsTr("Eventuele handmatige selektie weerstation.")
        		width: isNxt ? 500 : 400
 		anchors {
 			left: stationButton.right

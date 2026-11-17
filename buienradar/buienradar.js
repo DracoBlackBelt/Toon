@@ -1,8 +1,3 @@
-function addStationName(inputarray, index, name) {
-		inputarray[index] = name;
-		return inputarray;
-}
-
 function addMinutes(time/*"hh:mm"*/, minsToAdd/*"N"*/) {
   function z(n){
     return (n<10? '0':'') + n;
@@ -13,17 +8,10 @@ function addMinutes(time/*"hh:mm"*/, minsToAdd/*"N"*/) {
   return z(mins%(24*60)/60 | 0) + ':' + z(mins%60);  
 }
 
-function formatScale(maxRegen, yScale) {
-    if (yScale = 0) {
-	return 72 / maxRegen;
-    } else {
-	return 72 / yScale;
-    }
-}
-
 function formatTemp(tempValue, locationName) {
 //adapted to reflect locale settings
-	if (locationName) return locationName + ": " + i18n.number( Number( tempValue ), 1 ) + " °C";
+	var displayName = locationName === "Schiphol" ? "Amsterdam" : locationName;
+	if (displayName) return displayName + ": " + i18n.number( Number( tempValue ), 1 ) + " °C";
 	return "Even geduld..."
 }
 
@@ -33,20 +21,8 @@ function dateFormat( dateStr ) {
 }
 
 
-function formatDimTemp( tempValue ) {
-//adapted to reflect locale settings
-
-	return i18n.number( Number( tempValue ), 1 )  + " °C";
-}
-
-
 function formatWind(richting, bf) {
 	return "wind: " + bf + " BFT, " + richting;
-}
-
-
-function formatWind2(richting, bf) {
-	return bf + " " + richting;
 }
 
 
@@ -62,21 +38,27 @@ function formatZin(zin) {
 function determineNight (tijdnu, zonop, zononder) {
 	var zonoptimestr = zonop.substring(11,16);
 	var zonondertimestr = zononder.substring(11,16);
-	if (tijdnu.length == 4)
+
+	if (tijdnu.length == 4) {
 		tijdnu = "0" + tijdnu;
-	var isTodayDay = ((tijdnu <= zonondertimestr) && (tijdnu >= zonoptimestr));
+	}
+
+	function toMinutes(time) {
+		var parts = time.split(':');
+		return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+	}
+
+	var nowMin = toMinutes(tijdnu);
+	var sunriseMin = toMinutes(zonoptimestr);
+	var sunsetMin = toMinutes(zonondertimestr);
+
+	var isTodayDay = (nowMin >= sunriseMin && nowMin <= sunsetMin);
 	return !isTodayDay;
 }
 
 
-	
 function formatLuchtdruk(ld, humidity) {
 	return i18n.number(ld, 0, i18n.general_rounding, 1) + " hPa; lv: " + humidity + " %";
-}
-
-
-function lineTemp(tempValue) {
-	return i18n.number( Number( tempValue ), 1 ) + " °C";
 }
 
 
@@ -85,35 +67,8 @@ function lineZonOpOnder(zonop, zononder) {
 }
 
 
-function lineWindsnelheid(bf) {
-	return bf + " BFT";
-}
-
-
-function lineLuchtvochtigheid(lv) {
-	return lv + " %";
-}
-
-
-function lineLuchtdruk(ld) {
-	return i18n.number(ld, 0, i18n.general_rounding, 1) + " hPa";
-}
-
-
-function lineZichtmeters(zm) {
-	return zm + " m";
-}
-
-
-function lineWindstotenMS(ws) {
-	return "Windstoten:       " + ws + " m/s";
-}
-
-
 /**
-* @brief Calculate a filename to choose weather icons, distinquishing day and night icons. If later than 16:00 local time a night icon will be chosen.
-* @param forceDay : Boolean
-*	 If set to true, choice of day icon is forced.
+* @brief Calculate a filename to choose weather icons, distinquishing day and night icons.
 * @param sourceFileName : String
 *	 This is the first part of the filename including the path.
 * @param weatherId : String
@@ -123,7 +78,7 @@ function lineWindstotenMS(ws) {
 * @return relative path to weather icon as string
 */
 
-function parseWeatherIdAndText(forceDay, sourceFileName, weatherId, weatherText, zonop, zononder, tijdnu) {
+function parseWeatherIdAndText(sourceFileName, weatherId, weatherText, zonop, zononder, tijdnu) {
     
 	var isTodayNight = determineNight (tijdnu, zonop, zononder);
 
@@ -145,7 +100,7 @@ function parseWeatherIdAndText(forceDay, sourceFileName, weatherId, weatherText,
 	sourceFileName += isTodayNight ? "RainHailNight" : "RainHailDay";
 	break;
     case 'g':
-	sourceFileName += isTodayNight ? "Thunder Night" : "ThunderDay";
+	sourceFileName += isTodayNight ? "ThunderNight" : "ThunderDay";
 	break;
     case 'u':
 	sourceFileName += isTodayNight ? "LightSnowNight" : "LightSnowDay";
@@ -230,7 +185,6 @@ function parseWeatherIdAndText(forceDay, sourceFileName, weatherId, weatherText,
 	sourceFileName += "SlipRisk";
 	break;
     case '0':
-// hairy code, maybe clean up with switch .. case?
 	if (weatherText !== "")
 	{
 	    if (weatherText === "zonnig") {
@@ -266,4 +220,3 @@ function parseWeatherIdAndText(forceDay, sourceFileName, weatherId, weatherText,
     
     return sourceFileName += ".png"
 }
-
