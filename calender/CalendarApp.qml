@@ -59,7 +59,8 @@ App {
 		'ShowColors': "Yes",
 		'DimTileExtended': "No",
 		'RefreshIntervalInMinutes': 60,
-		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics"]
+		'Calendar_URL': ["https://calendar.google.com/calendar/ical/nl.dutch%23holiday%40group.v.calendar.google.com/public/basic.ics",
+		                 "https://planner.huisman.dev/feed/calendar/chaUmc_5TKGcuxvwyRRMc6k3WmFJ4ef-Cfzmz5hyv88.ics"]
 	}
 
 	// state of the current refresh cycle
@@ -95,18 +96,31 @@ App {
 		readSettings();
 	}
 
-	function readSettings() {
+	function readSettings() {				// parse userSettings.json, keep the current values on a missing or corrupt file
 		try {
-			calendarSettingsJson = JSON.parse(userSettingsFile.read());
+			var json = JSON.parse(userSettingsFile.read());
+			if ((json === null) || (typeof json !== "object") || (json instanceof Array)) {
+				console.log("calendar: settings file is not a JSON object, keeping current settings");
+				return;
+			}
+			calendarSettingsJson = json;
 			if (calendarSettingsJson['ShowNotifications']) showNotificationSetting = calendarSettingsJson['ShowNotifications'];
 			if (calendarSettingsJson['ShowColors']) showColorsSetting = calendarSettingsJson['ShowColors'];
 			if (calendarSettingsJson['DimTileExtended']) showDimTileExtended = calendarSettingsJson['DimTileExtended'];
 			if (calendarSettingsJson['ShowAnimation']) showAnimationSetting = calendarSettingsJson['ShowAnimation'];
-			if (calendarSettingsJson['RefreshIntervalInMinutes']) refreshIntervalInMinutes = calendarSettingsJson['RefreshIntervalInMinutes'];
-			if (!calendarSettingsJson['Calendar_URL']) calendarSettingsJson['Calendar_URL'] = [];
+			if (calendarSettingsJson['RefreshIntervalInMinutes']) refreshIntervalInMinutes = clampRefreshInterval(calendarSettingsJson['RefreshIntervalInMinutes']);
+			if (!(calendarSettingsJson['Calendar_URL'] instanceof Array)) calendarSettingsJson['Calendar_URL'] = [];
 		} catch(e) {
 			console.log("calendar: could not read settings: " + e);
 		}
+	}
+
+	function clampRefreshInterval(value) {			// the settings screen only allows 10-99 minutes, defend against hand-edited files
+		var v = parseInt(value, 10);
+		if (isNaN(v)) return 60;
+		if (v < 10) return 10;
+		if (v > 99) return 99;
+		return v;
 	}
 
 	function sendNotification() {
